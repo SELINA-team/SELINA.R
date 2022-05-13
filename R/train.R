@@ -237,7 +237,7 @@ MADA <- torch::nn_module(
     self$feature <- torch::nn_sequential(nn_linear(nfeatures, 100), torch::nn_relu(), torch::nn_dropout(p = 0.5, inplace = FALSE))
     self$class_classifier <- torch::nn_sequential(nn_linear(100, 50), torch::nn_relu(), torch::nn_dropout(p = 0.5, inplace = FALSE), torch::nn_linear(50, nct))
     self$domain_classifier <- torch::nn_module_list(lapply(1:nct, function(x) {
-      nn_sequential(torch::nn_linear(100, 25), torch::nn_relu(), torch::nn_linear(25, nplat))
+      torch::nn_sequential(torch::nn_linear(100, 25), torch::nn_relu(), torch::nn_linear(25, nplat))
     }))
   },
   forward = function(input_data, alpha, nct) {
