@@ -11,6 +11,7 @@ Suggests: knitr
 VignetteBuilder: knitr
 License: GPL
 Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
 LazyData: true
 NeedsCompilation: no
 RoxygenNote: 7.1.1

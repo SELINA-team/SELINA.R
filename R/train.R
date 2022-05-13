@@ -1,44 +1,43 @@
-# library(torch)
-# required_Packages = c("torch", "smotefamily", "data.table")
-# if(!all(required_Packages %in% installed.packages())){
-#   if (!requireNamespace("BiocManager", quietly = TRUE)){
-#     install.packages("BiocManager")
-#   }
-#   BiocManager::install(setdiff(required_Packages, installed.packages()))
-# }
-# 
-# 
-# option_list <- list(
-#   make_option(c("-i", "--path_in"), type = "character", default=FALSE,
-#               help="Input matrix path"),
-#   make_option(c("-r", "--path_out"), type="character", default=FALSE,
-#               help="Input plot result path"),
-#   make_option(c("-r", "--prefix"), type="character", default=FALSE,
-#               help="Input plot result path")
-# )
-# opt_parser = OptionParser(option_list=option_list)
-# opt = parse_args(opt_parser)
-# 
-# path_in = opt$path_in
-# path_out = opt$path_out
-# prefix = opt$prefix
-# require(torch)
+#' Train model based on your own data
+#'
+#' @param path_in File path of training datasets.
+#' @param path_out File path of the output model.
+#' @param prefix Prefix of the output files. DEFAULT: pre-trained.
+#'
+#' @return An MADA model.
+#' @importFrom stats runif
+#' @importFrom utils read.csv write.table
+#' @importFrom torch cuda_is_available torch_device torch_tensor torch_unsqueeze dataset nn_module dataloader nn_cross_entropy_loss nn_mse_loss optim_adam torch_float torch_load torch_save autograd_function with_no_grad
 
-
-
+#' @export 
+#'
+#' @examples
+train_model <- function(path_in, path_out, prefix) {
+  res_pre <- preprocessing(path_in)
+  train_data <- res_pre$train_sets
+  celltypes <- res_pre$celltypes
+  platforms <- res_pre$platforms
+  genes <- res_pre$genes
+  
+  ct_dic <- label2dic(celltypes)
+  plat_dic <- label2dic(platforms)
+  nfeatures <- nrow(train_data)
+  nct <- length(ct_dic)
+  nplat <- length(plat_dic)
+  
+  network <- train(
+    train_data, params_train, celltypes, platforms, nfeatures,
+    nct, nplat, ct_dic, plat_dic, device
+  )
+  torch_save(network, paste0(path_out, "/", prefix, "_params.pt"))
+  model_meta <- list(genes = genes, celltypes = ct_dic)
+  
+  saveRDS(model_meta, paste0(path_out, "/", prefix, "_meta.rds"))
+  print("All done")
+}
 
 params_train <- c(0.0001, 50, 128)
 device <- if (cuda_is_available()) torch_device("cuda:0") else "cpu"
-
-# params_train <- c(0.0001, 50, 128)
-# device <- if (cuda_is_available()) torch_device("cuda:0") else "cpu"
-# # path_in = "/Users/shixiaoying/Downloads/SELINA-main-4/demos/reference_data"
-# train_model(
-#   path_in = "/Users/shixiaoying/Downloads/SELINA-main-4/demos/reference_data",
-#   path_out = "/Users/shixiaoying/Projects/SELINA_0501/SELINA_Rpackage/result",
-#   prefix = "demo"
-# )
-
 
 se_SMOTE <- function(X, target, target_name, K = 5, add_size = 1000) {
 
@@ -305,43 +304,6 @@ train <- function(train_data, params, celltypes, platforms, nfeatures, nct, npla
   return(network)
 }
 
-#' Train model based on your own data
-#'
-#' @param path_in File path of training datasets.
-#' @param path_out File path of the output model.
-#' @param prefix Prefix of the output files. DEFAULT: pre-trained.
-#'
-#' @return An MADA model.
-#' @importFrom stats runif
-#' @importFrom utils read.csv write.table
-#' @importFrom torch cuda_is_available torch_device torch_tensor torch_unsqueeze dataset nn_module dataloader nn_cross_entropy_loss nn_mse_loss optim_adam torch_float torch_load torch_save autograd_function with_no_grad
-
-#' @export 
-#'
-#' @examples
-train_model <- function(path_in, path_out, prefix) {
-  res_pre <- preprocessing(path_in)
-  train_data <- res_pre$train_sets
-  celltypes <- res_pre$celltypes
-  platforms <- res_pre$platforms
-  genes <- res_pre$genes
-
-  ct_dic <- label2dic(celltypes)
-  plat_dic <- label2dic(platforms)
-  nfeatures <- nrow(train_data)
-  nct <- length(ct_dic)
-  nplat <- length(plat_dic)
-
-  network <- train(
-    train_data, params_train, celltypes, platforms, nfeatures,
-    nct, nplat, ct_dic, plat_dic, device
-  )
-  torch_save(network, paste0(path_out, "/", prefix, "_params.pt"))
-  model_meta <- list(genes = genes, celltypes = ct_dic)
-
-  saveRDS(model_meta, paste0(path_out, "/", prefix, "_meta.rds"))
-  print("All done")
-}
 
 
 # train_model(path_in=path_in, path_out=path_out, prefix=prefix)

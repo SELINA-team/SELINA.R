@@ -1,37 +1,53 @@
-# required_Packages = c("torch", "coro")
-# if(!all(required_Packages %in% installed.packages())){
-#   if (!requireNamespace("BiocManager", quietly = TRUE)){
-#     install.packages("BiocManager")
-#   }
-#   BiocManager::install(setdiff(required_Packages, installed.packages()))
-# }
-# 
-
-# 
-# option_list <- list(
-#   make_option(c("-i", "--query_expr"), type = "character", default=FALSE,
-#               help="Input matrix path"),
-#   make_option(c("-r", "--model"), type="character", default=FALSE,
-#               help="Input plot result path"),
-#   make_option(c("-r", "--path_out"), type="character", default=FALSE,
-#               help="Input plot result path"),
-#   make_option(c("-r", "--outprefix"), type="character", default=FALSE,
-#               help="Input plot result path"),
-#   make_option(c("-r", "--disease"), type="character", default=FALSE,
-#               help="Input plot result path"),
-#   make_option(c("-r", "--mode"), type="character", default=FALSE,
-#               help="Input plot result path")
-# )
-# opt_parser = OptionParser(option_list=option_list)
-# opt = parse_args(opt_parser)
-# 
-# query_expr = opt$query_expr
-# model = opt$model
-# path_out = opt$path_out
-# outprefix = opt$outprefix
-# disease = opt$disease
-# mode = opt$mode
-
+#' Fine-tuning and predict for the query data
+#'
+#' @param query_expr File path of the query data matrix
+#' @param model File path of the pre-trained model
+#' @param path_out File path of the output files.
+#' @param outprefix Prefix of the output files. DEFAULT: query.
+#' @param disease Depend on your data is in some disease condition or not, choose from 'TRUE' or 'FALSE'. DEFAULT: 'FALSE'.
+#' @param mode Single-cell level input or cluster level input, choose from 'single' or 'cluster'. DEFAULT: 'single'.
+#'
+#' @return Prediction results and corresponding probability for each query cell.
+#' 
+#' @importFrom stats rnorm 
+#' @importFrom utils read.csv write.table
+#' @importFrom torch cuda_is_available torch_device torch_tensor torch_unsqueeze dataset nn_module dataloader nn_cross_entropy_loss nn_mse_loss optim_adam torch_float torch_load torch_save autograd_function with_no_grad
+#' @export
+#'
+#' @examples
+query_predict <- function(query_expr, model, path_out, outprefix, disease, mode) {
+  print("Loading data")
+  query_expr <- read_expr(query_expr)
+  meta <- readRDS(gsub("pt", "rds", (gsub("params", "meta", model))))
+  genes <- meta$genes
+  ct_dic <- meta$celltypes
+  query_expr <- merge_query(genes, query_expr)
+  nfeatures <- length(genes)
+  nct <- length(ct_dic)
+  network <- torch_load(model, device = device)
+  network <- Autoencoder(network, nfeatures, nct)
+  if ((!disease) & (mode != "cluster")) {
+    print("Fine-tuning1")
+    network <- tune1(query_expr, network, params_tune1)
+    print("Fine-tuning2")
+    network <- tune2(query_expr, network, params_tune2)
+  }
+  network <- Classifier(network)$to(device = device)
+  test_res <- test(query_expr, network, ct_dic)
+  pred_labels <- test_res$pred_labels
+  pred_prob <- test_res$pred_prob
+  
+  ## make directory path_out
+  write.table(data.frame(pred_labels, stringsAsFactors = F),
+              paste0(path_out, "/", outprefix, "_predictions.txt"),
+              row.names = F, sep = "\t", quote = F
+  )
+  write.table(data.frame(pred_prob, stringsAsFactors = F),
+              paste0(path_out, "/", outprefix, "_probability.txt"),
+              sep = "\t", quote = F
+  )
+  print("Finish Prediction")
+}
 
 device <- if (cuda_is_available()) torch_device("cuda:0") else "cpu"
 params_tune1 <- c(0.0005, 50, 128)
@@ -190,56 +206,4 @@ test <- function(test_df, network, ct_dic) {
   rownames(pred_prob) <- colnames(test_df)
   colnames(pred_prob) <- names(ct_dic)
   return(list(pred_labels = pred_labels, pred_prob = pred_prob))
-}
-
-
-#' Fine-tuning and predict for the query data
-#'
-#' @param query_expr File path of the query data matrix
-#' @param model File path of the pre-trained model
-#' @param path_out File path of the output files.
-#' @param outprefix Prefix of the output files. DEFAULT: query.
-#' @param disease Depend on your data is in some disease condition or not, choose from 'TRUE' or 'FALSE'. DEFAULT: 'FALSE'.
-#' @param mode Single-cell level input or cluster level input, choose from 'single' or 'cluster'. DEFAULT: 'single'.
-#'
-#' @return Prediction results and corresponding probability for each query cell.
-#' 
-#' @importFrom stats rnorm 
-#' @importFrom utils read.csv write.table
-#' @importFrom torch cuda_is_available torch_device torch_tensor torch_unsqueeze dataset nn_module dataloader nn_cross_entropy_loss nn_mse_loss optim_adam torch_float torch_load torch_save autograd_function with_no_grad
-#' @exportd
-#'
-#' @examples
-query_predict <- function(query_expr, model, path_out, outprefix, disease, mode) {
-  print("Loading data")
-  query_expr <- read_expr(query_expr)
-  meta <- readRDS(gsub("pt", "rds", (gsub("params", "meta", model))))
-  genes <- meta$genes
-  ct_dic <- meta$celltypes
-  query_expr <- merge_query(genes, query_expr)
-  nfeatures <- length(genes)
-  nct <- length(ct_dic)
-  network <- torch_load(model, device = device)
-  network <- Autoencoder(network, nfeatures, nct)
-  if ((!disease) & (mode != "cluster")) {
-    print("Fine-tuning1")
-    network <- tune1(query_expr, network, params_tune1)
-    print("Fine-tuning2")
-    network <- tune2(query_expr, network, params_tune2)
-  }
-  network <- Classifier(network)$to(device = device)
-  test_res <- test(query_expr, network, ct_dic)
-  pred_labels <- test_res$pred_labels
-  pred_prob <- test_res$pred_prob
-
-  ## make directory path_out
-  write.table(data.frame(pred_labels, stringsAsFactors = F),
-    paste0(path_out, "/", outprefix, "_predictions.txt"),
-    row.names = F, sep = "\t", quote = F
-  )
-  write.table(data.frame(pred_prob, stringsAsFactors = F),
-    paste0(path_out, "/", outprefix, "_probability.txt"),
-    sep = "\t", quote = F
-  )
-  print("Finish Prediction")
 }
