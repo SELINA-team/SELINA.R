@@ -7,7 +7,7 @@
 #' @return An MADA model.
 #' @importFrom stats runif
 #' @importFrom utils read.csv write.table
-#' @importFrom torch cuda_is_available torch_device torch_tensor torch_unsqueeze dataset nn_module dataloader nn_cross_entropy_loss nn_mse_loss optim_adam torch_float torch_load torch_save autograd_function with_no_grad
+#' @importFrom torch nn_sequential cuda_is_available torch_device torch_tensor torch_unsqueeze dataset nn_module dataloader nn_cross_entropy_loss nn_mse_loss optim_adam torch_float torch_load torch_save autograd_function with_no_grad
 
 #' @export 
 #'
@@ -234,8 +234,8 @@ GRL <- torch::autograd_function(
 MADA <- torch::nn_module(
   "class_MADA",
   initialize = function(nfeatures, nct, nplat) {
-    self$feature <- torch::nn_sequential(nn_linear(nfeatures, 100), torch::nn_relu(), torch::nn_dropout(p = 0.5, inplace = FALSE))
-    self$class_classifier <- torch::nn_sequential(nn_linear(100, 50), torch::nn_relu(), torch::nn_dropout(p = 0.5, inplace = FALSE), torch::nn_linear(50, nct))
+    self$feature <- torch::nn_sequential(torch::nn_linear(nfeatures, 100), torch::nn_relu(), torch::nn_dropout(p = 0.5, inplace = FALSE))
+    self$class_classifier <- torch::nn_sequential(torch::nn_linear(100, 50), torch::nn_relu(), torch::nn_dropout(p = 0.5, inplace = FALSE), torch::nn_linear(50, nct))
     self$domain_classifier <- torch::nn_module_list(lapply(1:nct, function(x) {
       torch::nn_sequential(torch::nn_linear(100, 25), torch::nn_relu(), torch::nn_linear(25, nplat))
     }))
