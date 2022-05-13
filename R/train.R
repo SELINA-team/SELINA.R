@@ -36,8 +36,11 @@ train_model <- function(path_in, path_out, prefix) {
   print("All done")
 }
 
+
 params_train <- c(0.0001, 50, 128)
 device <- if (cuda_is_available()) torch_device("cuda:0") else "cpu"
+
+
 
 se_SMOTE <- function(X, target, target_name, K = 5, add_size = 1000) {
 
@@ -192,19 +195,19 @@ preprocessing <- function(path_in) {
 }
 
 
-trainDatasets <- dataset(
+trainDatasets <- torch::dataset(
   name = "trainDatasets",
   initialize = function(data, celltypes, platforms, ct_dic, plat_dic) {
     class_labels <- unlist(sapply(celltypes, function(x) ct_dic[x]), use.names = F)
     domain_labels <- unlist(sapply(platforms, function(x) plat_dic[x]), use.names = F)
 
-    self$class_labels <- torch_tensor(class_labels)
-    self$domain_labels <- torch_tensor(domain_labels)
-    self$expr <- torch_tensor(data)
+    self$class_labels <- torch::torch_tensor(class_labels)
+    self$domain_labels <- torch::torch_tensor(domain_labels)
+    self$expr <- torch::torch_tensor(data)
   },
   .getitem = function(index) {
     return(list(
-      torch_tensor(self$expr[, index]),
+      torch::torch_tensor(self$expr[, index]),
       self$class_labels[index],
       self$domain_labels[index]
     ))
@@ -215,7 +218,7 @@ trainDatasets <- dataset(
 )
 
 
-GRL <- autograd_function(
+GRL <- torch::autograd_function(
   forward = function(ctx, x, alpha) {
     ctx$save_for_backward(alpha = alpha)
     x
@@ -228,23 +231,23 @@ GRL <- autograd_function(
 )
 
 
-MADA <- nn_module(
+MADA <- torch::nn_module(
   "class_MADA",
   initialize = function(nfeatures, nct, nplat) {
-    self$feature <- nn_sequential(nn_linear(nfeatures, 100), nn_relu(), nn_dropout(p = 0.5, inplace = FALSE))
-    self$class_classifier <- nn_sequential(nn_linear(100, 50), nn_relu(), nn_dropout(p = 0.5, inplace = FALSE), nn_linear(50, nct))
-    self$domain_classifier <- nn_module_list(lapply(1:nct, function(x) {
-      nn_sequential(nn_linear(100, 25), nn_relu(), nn_linear(25, nplat))
+    self$feature <- torch::nn_sequential(nn_linear(nfeatures, 100), torch::nn_relu(), torch::nn_dropout(p = 0.5, inplace = FALSE))
+    self$class_classifier <- torch::nn_sequential(nn_linear(100, 50), torch::nn_relu(), torch::nn_dropout(p = 0.5, inplace = FALSE), torch::nn_linear(50, nct))
+    self$domain_classifier <- torch::nn_module_list(lapply(1:nct, function(x) {
+      nn_sequential(torch::nn_linear(100, 25), torch::nn_relu(), torch::nn_linear(25, nplat))
     }))
   },
   forward = function(input_data, alpha, nct) {
     features <- self$feature(input_data)
     class_logits <- self$class_classifier(features)
-    class_predictions <- nn_softmax(dim = 1)
+    class_predictions <- torch::nn_softmax(dim = 1)
     reverse_features <- GRL(features, alpha)
     domain_logits <- list()
     for (class_idx in 1:nct) {
-      wrf <- torch_unsqueeze(class_predictions(class_logits)[, class_idx], 2) * reverse_features
+      wrf <- torch::torch_unsqueeze(class_predictions(class_logits)[, class_idx], 2) * reverse_features
       domain_logits[[length(domain_logits) + 1]] <- self$domain_classifier[[class_idx]](wrf)
     }
     return(list(class_logits = class_logits, domain_logits = domain_logits))
@@ -258,13 +261,13 @@ train <- function(train_data, params, celltypes, platforms, nfeatures, nct, npla
   n_epoch <- params[2]
   batch_size <- params[3]
   train_data <- trainDatasets(data = train_data, celltypes, platforms, ct_dic, plat_dic)
-  optimizer <- optim_adam(network$parameters, lr = lr)
-  loss_class <- nn_cross_entropy_loss()
-  loss_domain <- nn_cross_entropy_loss()
+  optimizer <- torch::optim_adam(network$parameters, lr = lr)
+  loss_class <- torch::nn_cross_entropy_loss()
+  loss_domain <- torch::nn_cross_entropy_loss()
   network <- network$to(device = device)
   loss_class <- loss_class$to(device = device)
   loss_domain <- loss_domain$to(device = device)
-  train_loader <- dataloader(dataset = train_data, batch_size = batch_size, shuffle = TRUE, drop_last = TRUE)
+  train_loader <- torch::dataloader(dataset = train_data, batch_size = batch_size, shuffle = TRUE, drop_last = TRUE)
   len_train_loader <- length(train_loader)
   print("Begin training")
   for (epoch in 1:n_epoch) {

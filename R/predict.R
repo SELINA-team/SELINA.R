@@ -24,7 +24,7 @@ query_predict <- function(query_expr, model, path_out, outprefix, disease, mode)
   query_expr <- merge_query(genes, query_expr)
   nfeatures <- length(genes)
   nct <- length(ct_dic)
-  network <- torch_load(model, device = device)
+  network <- torch::torch_load(model, device = device)
   network <- Autoencoder(network, nfeatures, nct)
   if ((!disease) & (mode != "cluster")) {
     print("Fine-tuning1")
@@ -49,7 +49,7 @@ query_predict <- function(query_expr, model, path_out, outprefix, disease, mode)
   print("Finish Prediction")
 }
 
-device <- if (cuda_is_available()) torch_device("cuda:0") else "cpu"
+device <- if (torch::cuda_is_available()) torch::torch_device("cuda:0") else "cpu"
 params_tune1 <- c(0.0005, 50, 128)
 params_tune2 <- c(0.0001, 10, 128)
 
@@ -75,29 +75,29 @@ merge_query <- function(genes, query_expr) {
 }
 
 
-Datasets <- dataset(
+Datasets <- torch::dataset(
   initialize = function(data) {
     self$expr <- data
   },
   .getitem = function(index) {
-    torch_tensor(self$expr[, index])
+    torch::torch_tensor(self$expr[, index])
   },
   .length = function() {
     ncol(self$expr)
   }
 )
 
-Autoencoder <- nn_module(
+Autoencoder <- torch::nn_module(
   "class_Autoencoder",
   initialize = function(network, nfeature, nct) {
     encoder <- c(network$feature$children, network$class_classifier$children)
     encoder_index <- c(1, 2, 4, 5, 7)
-    self$encoder <- do.call(nn_sequential, c(unlist(sapply(encoder_index, function(x) encoder[[x]]), use.names = F), nn_relu()))
+    self$encoder <- do.call(torch::nn_sequential, c(unlist(sapply(encoder_index, function(x) encoder[[x]]), use.names = F), torch::nn_relu()))
     # self$encoder = nn_sequential(encoder[[1]],encoder[[2]],encoder[[4]],encoder[[5]],encoder[[7]],nn_relu() ) #
-    self$decoder <- nn_sequential(
-      nn_linear(in_features = nct, out_features = 50), nn_relu(),
-      nn_linear(in_features = 50, out_features = 100), nn_relu(),
-      nn_linear(in_features = 100, out_features = nfeature)
+    self$decoder <- torch::nn_sequential(
+      torch::nn_linear(in_features = nct, out_features = 50), nn_relu(),
+      torch::nn_linear(in_features = 50, out_features = 100), nn_relu(),
+      torch::nn_linear(in_features = 100, out_features = nfeature)
     )
   },
   forward = function(input_data) {
@@ -107,10 +107,10 @@ Autoencoder <- nn_module(
 )
 
 
-Classifier <- nn_module(
+Classifier <- torch::nn_module(
   "class_Classifier",
   initialize = function(network) {
-    self$classifier <- do.call(nn_sequential, c(unlist(network$encoder$children[-length(network$encoder$children)], use.names = F), nn_softmax(dim = 1)))
+    self$classifier <- do.call(torch::nn_sequential, c(unlist(network$encoder$children[-length(network$encoder$children)], use.names = F), torch::nn_softmax(dim = 1)))
   },
   forward = function(input_data) {
     output <- self$classifier(input_data)
@@ -124,10 +124,10 @@ tune1 <- function(test_df, network, params) {
   lr <- params[1]
   n_epoch <- params[2]
   batch_size <- params[3]
-  optimizer <- optim_adam(network$parameters, lr = lr)
-  loss <- nn_mse_loss()
+  optimizer <- torch::optim_adam(network$parameters, lr = lr)
+  loss <- torch::nn_mse_loss()
   loss <- loss$to(device = device)
-  test_loader <- dataloader(dataset = test_dat, batch_size = batch_size, shuffle = TRUE)
+  test_loader <- torch::dataloader(dataset = test_dat, batch_size = batch_size, shuffle = TRUE)
   for (i in 1:length(network$encoder$named_parameters())) {
     res <- network$encoder$named_parameters()[[i]]
     res$requires_grad <- FALSE
@@ -155,10 +155,10 @@ tune2 <- function(test_df, network, params) {
   lr <- params[1]
   n_epoch <- params[2]
   batch_size <- params[3]
-  optimizer <- optim_adam(network$parameters, lr = lr)
-  loss <- nn_mse_loss()
+  optimizer <- torch::optim_adam(network$parameters, lr = lr)
+  loss <- torch::nn_mse_loss()
   loss <- loss$to(device = device)
-  test_loader <- dataloader(dataset = test_dat, batch_size = batch_size, shuffle = TRUE)
+  test_loader <- torch::dataloader(dataset = test_dat, batch_size = batch_size, shuffle = TRUE)
   for (i in 1:length(network$encoder$named_parameters())) {
     res <- network$encoder$named_parameters()[[i]]
     res$requires_grad <- TRUE
@@ -188,7 +188,7 @@ tune2 <- function(test_df, network, params) {
 test <- function(test_df, network, ct_dic) {
   test_dat <- Datasets(test_df)
   ct_dic_rev <- split(rep(names(ct_dic), sapply(ct_dic, length)), unlist(ct_dic))
-  test_loader <- dataloader(dataset = test_dat, batch_size = ncol(test_df), shuffle = FALSE)
+  test_loader <- torch::dataloader(dataset = test_dat, batch_size = ncol(test_df), shuffle = FALSE)
   i <- 1 # why i not increase
   with_no_grad(
     coro::loop(for (batch in test_loader) {
