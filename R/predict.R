@@ -11,7 +11,7 @@
 #' 
 #' @importFrom stats rnorm 
 #' @importFrom utils read.csv write.table
-#' @importFrom torch cuda_is_available torch_device torch_tensor torch_unsqueeze dataset nn_module dataloader nn_cross_entropy_loss nn_mse_loss optim_adam torch_float torch_load torch_save autograd_function with_no_grad
+#' @importFrom torch cuda_is_available torch_device torch_tensor torch_unsqueeze dataset nn_relu nn_module dataloader nn_cross_entropy_loss nn_mse_loss optim_adam torch_float torch_load torch_save autograd_function with_no_grad
 #' @export
 #'
 #' @examples
@@ -95,8 +95,8 @@ Autoencoder <- torch::nn_module(
     self$encoder <- do.call(torch::nn_sequential, c(unlist(sapply(encoder_index, function(x) encoder[[x]]), use.names = F), torch::nn_relu()))
     # self$encoder = nn_sequential(encoder[[1]],encoder[[2]],encoder[[4]],encoder[[5]],encoder[[7]],nn_relu() ) #
     self$decoder <- torch::nn_sequential(
-      torch::nn_linear(in_features = nct, out_features = 50), nn_relu(),
-      torch::nn_linear(in_features = 50, out_features = 100), nn_relu(),
+      torch::nn_linear(in_features = nct, out_features = 50), torch::nn_relu(),
+      torch::nn_linear(in_features = 50, out_features = 100), torch::nn_relu(),
       torch::nn_linear(in_features = 100, out_features = nfeature)
     )
   },
