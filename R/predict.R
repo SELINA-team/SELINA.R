@@ -10,7 +10,7 @@
 #' @param cell_cutoff Cutoff for number of cells with the same cell type in 10 nearest neighbor cells(only used when the input is single-cell level expression matrix). DEFAULT: 5.
 #' @param prob_cutoff Cutoff for prediction probability. DEFAULT: 0.9.
 #'
-#' @return Prediction results and corresponding probability for each query cell.
+#' @return Prediction results and corresponding probability for query. This step will output eight files for 'single' mode and four files for 'cluster' mode 
 #'
 #' @importFrom stats rnorm
 #' @importFrom utils read.csv write.table

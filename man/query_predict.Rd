@@ -36,7 +36,7 @@ query_predict(
 \item{prob_cutoff}{Cutoff for prediction probability. DEFAULT: 0.9.}
 }
 \value{
-Prediction results and corresponding probability for each query cell.
+Prediction results and corresponding probability for query. This step will output eight files for 'single' mode and four files for 'cluster' mode
 }
 \description{
 Fine-tuning and predict for the query data

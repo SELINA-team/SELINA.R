@@ -26,7 +26,8 @@ We recommend you install SELINA.R with `devtools::install_github()` from
 R:
 
 ``` r
-# install.packages("devtools")
+if (!require("devtools", quietly = TRUE))
+    install.packages("devtools")
 devtools::install_github("SELINA-team/SELINA.R")
 ```
 
@@ -40,8 +41,9 @@ You could preprocess query data with steps in
 ### Pre-training of the reference data
 
 This is a basic example which shows you how to train a MADA model with
-your own data. Files used in here are included in folder `demo`. You can
-check parameter details with command `?train_model`.
+your own data.  
+Files used in here are included in folder `demo`. You can check
+parameter details with command `?train_model`.
 
 ``` r
 library(SELINA)
@@ -51,16 +53,18 @@ train_model(path_in = "demo/reference_data",
 ```
 
 In this step, two output files will be generated in the train\_output
-folder. 1. `pre-trained_params.pt` : a file containing all parameters of
-the trained model  
+folder.  
+1\. `pre-trained_params.pt` : a file containing all parameters of the
+trained model  
 2\. `pre-trained_meta.pkl` : a file containing the cell types and genes
 of the reference data
 
 ### Predict
 
 This is a basic example which shows you how to train a MADA model with
-your own data. Files used in here are included in folder `demo`. You can
-check parameter details with command `?train_model`.
+your own data.  
+Files used in here are included in folder `demo`. You can check
+parameter details with command `?train_model`.
 
 ``` r
 library(SELINA)
@@ -78,19 +82,22 @@ query_predict(query_expr = "demo/query_data/query.txt",
 This step will output eight files in the predict\_output folder. Note
 that if the input is a cluster level matrix, then the last four files
 will not be generated.  
-1\. demo\_predictions.txt : predicted cell type for each cell in the
-query data. 2. demo\_probability.txt : probability of cells predicted as
-each of the reference cell types. 3. demo\_pred.png : umap plot with
-cell type annotations image. 4. demo\_DiffGenes.tsv : matrix
-representing the differentially expressed genes for each cell type, this
-file can be used to validate the annotation results. 5. demo\_prob.txt :
-prediction probability of each cell, each row represents one cell.
-Clusters with lower prediction probability may contain novel cell types
-that are not included in the reference. 6. demo\_cluster\_prob.png : box
-plot indicating the prediction probability distribution of cells in each
-cluster image. 7. demo\_unknown\_percent.txt : the percentage of cells
-that are assigned unknown in each cluster, each row represents one
-cluster. Clusters with a higher unknown percentage may contain novel
-cell types that are not included in the reference. 8.
-demo\_unknown\_percent.png : bar plot indicating the percentage of cells
-that are assigned unknown in each cluster image.
+1\. `demo_predictions.txt` : predicted cell type for each cell in the
+query data.  
+2\. `demo_probability.txt` : probability of cells predicted as each of
+the reference cell types.  
+3\. `demo_pred.png` : umap plot with cell type annotations image.  
+4\. `demo_DiffGenes.tsv` : matrix representing the differentially
+expressed genes for each cell type, this file can be used to validate
+the annotation results.  
+5\. `demo_prob.txt` : prediction probability of each cell, each row
+represents one cell. Clusters with lower prediction probability may
+contain novel cell types that are not included in the reference.  
+6\. `demo_cluster_prob.png` : box plot indicating the prediction
+probability distribution of cells in each cluster image.  
+7\. `demo_unknown_percent.txt` : the percentage of cells that are
+assigned unknown in each cluster, each row represents one cluster.
+Clusters with a higher unknown percentage may contain novel cell types
+that are not included in the reference.  
+8\. `demo_unknown_percent.png` : bar plot indicating the percentage of
+cells that are assigned unknown in each cluster image.
