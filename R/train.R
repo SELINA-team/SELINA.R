@@ -36,11 +36,9 @@ train_model <- function(path_in, path_out, prefix) {
   print("All done")
 }
 
-
+## parameters for training
 params_train <- c(0.0001, 50, 128)
 device <- if (cuda_is_available()) torch_device("cuda:0") else "cpu"
-
-
 
 se_SMOTE <- function(X, target, target_name, K = 5, add_size = 1000) {
 
