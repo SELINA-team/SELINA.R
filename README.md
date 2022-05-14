@@ -57,7 +57,7 @@ model = train_model(seuratlist,
             prefix = 'pre-trained')
 ```
 
-In this step, two output files will be generated in the train\_output
+In this step, two output files will be generated in the path_out
 folder.  
 1\. `pre-trained_params.pt` : a file containing all parameters of the
 trained model  
@@ -66,10 +66,9 @@ of the reference data
 
 ### Predict
 
-This is a basic example which shows you how to train a MADA model with
-your own data.  
+This is a basic example which shows you how to do annotation.  
 Files used in here are included in folder `demo`. You can check
-parameter details with command `?train_model`.
+parameter details with command `?query_predict`.
 
 ``` r
 library(SELINA)
