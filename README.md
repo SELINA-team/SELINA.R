@@ -46,12 +46,14 @@ parameter details with command `?train_model`.
 
 ``` r
 library(SELINA)
+
 # Read in rds file for training.
 train_rds1 <- readRDS(path_rds1)
 train_rds2 <- readRDS(path_rds2)
 seuratlist = list(train_rds1, train_rds2)
 model = train_model(seuratlist,
-            path_out = "train_output",
+            path_in,
+            path_out,
             prefix = 'pre-trained')
 ```
 
@@ -71,8 +73,12 @@ parameter details with command `?train_model`.
 
 ``` r
 library(SELINA)
+
+# If you predict directly after training, then can pass the load model path step.
 model <- read_model(path_model)
-query_predict(query_expr,
+
+# Predict query cell with SELINA
+query_predict(path_query,
               model,
               path_meta,
               path_out = '.',
