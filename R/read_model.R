@@ -12,4 +12,3 @@ read_model <- function(path_model) {
   model <- torch_load(path_model, device = device)
   return(model)
 }
-

@@ -1,23 +1,26 @@
 #' Train model based on your own data
 #'
 #' @param seuratlist A list of seurat object.
+#' @param path_in File path of reference meta files.
 #' @param path_out File path of the output model.
 #' @param prefix Prefix of the output files. DEFAULT: pre-trained.
 #'
 #' @return An MADA model.
 #' @importFrom stats runif
 #' @importFrom utils read.csv write.table
+#' @importFrom grDevices dev.off png
+#' @importFrom utils read.table
 #' @importFrom torch nn_sequential cuda_is_available torch_device torch_tensor torch_unsqueeze dataset nn_module dataloader nn_cross_entropy_loss nn_mse_loss optim_adam torch_float torch_load torch_save autograd_function with_no_grad
 
 #' @export
 #'
 #' @examples
-train_model <- function(seuratlist, path_out, prefix = 'pre-trained') {
+train_model <- function(seuratlist, path_in, path_out, prefix = 'pre-trained') {
 
   params_train <- c(0.0001, 50, 128)
   device <- if (cuda_is_available()) torch_device("cuda:0") else "cpu"
 
-  res_pre <- preprocessing(seuratlist)
+  res_pre <- preprocessing(seuratlist, path_in)
   train_data <- res_pre$train_sets
   celltypes <- res_pre$celltypes
   platforms <- res_pre$platforms
@@ -39,7 +42,7 @@ train_model <- function(seuratlist, path_out, prefix = 'pre-trained') {
   saveRDS(model_meta, paste0(path_out, "/", prefix, "_meta.rds"))
   
   return(network)
-  print("All done")
+  message("All done")
 }
 
 
@@ -107,19 +110,16 @@ label2dic <- function(label) {
   return(label_list)
 }
 
-preprocessing <- function(seuratlist) {
+preprocessing <- function(seuratlist, path_in) {
   message("Loading data")
   
-  train_sets = seuratlist
-  # samples <- sort(list.files(path_in, pattern = "*rds", full.names = T))
+  train_sets = sapply(seuratlist, function(rds) rds@assays$RNA@data, USE.NAMES = F)
   metas <- sort(list.files(path_in, pattern = "*_meta.txt", full.names = T))
-  # train_sets <- list()
   celltypes <- list()
   platforms <- list()
   genes <- list()
 
-  for (i in 1:length(samples)) {
-    # train_sets[[i]] <- readRDS(samples[i])@assays$RNA@counts
+  for (i in 1:length(metas)) {
     meta <- read.csv(metas[i], sep = "\t", header = T)
     celltype <- meta[, "Celltype"]
     platform <- meta[, "Platform"]
@@ -141,11 +141,12 @@ preprocessing <- function(seuratlist) {
   }
   for (i in 1:length(ct_freqs)) {
     ct <- names(ct_freqs[i])
-    if (ct_freqs[i] < sample_n) {
+    if (ct_freqs[i] <= sample_n) {
       rct_freqs[ct] <- ct_freqs[i]
     }
   }
-  for (i in 1:length(samples)) {
+  message('Start SMOTE')
+  for (i in 1:length(metas)) {
     sample_ct_freq <- list()
     ct_freq <- table(celltypes[i])
     if (length(ct_freq) > 1) {
@@ -156,7 +157,7 @@ preprocessing <- function(seuratlist) {
           sample_ct_freq[ct] <- round(sample_n * ct_freq[ct] / freq)
         }
       }
-      tmp <- data.frame(t(train_sets[[i]]), stringsAsFactors = F, check.names = F)
+      tmp <- data.frame(t(as.matrix(train_sets[[i]])), stringsAsFactors = F, check.names = F)
       tmp$class <- celltypes[[i]]
       tmp_N <- subset(tmp, !(tmp$class %in% names(sample_ct_freq)))
       celltype_N <- subset(celltypes[[i]], !(celltypes[[i]] %in% names(sample_ct_freq)))
@@ -174,9 +175,10 @@ preprocessing <- function(seuratlist) {
       platforms[[i]] <- rep(unique(platforms[[i]]), ncol(train_sets[[i]]))
     }
   }
+  message('SMOTE Done')
   platforms <- unlist(platforms, use.names = F)
   celltypes <- unlist(celltypes, use.names = F)
-  for (i in 1:length(samples)) {
+  for (i in 1:length(metas)) {
     train_sets[[i]] <- train_sets[[i]][match(genes, rownames(train_sets[[i]])), ]
     train_sets[[i]][is.na(train_sets[[i]])] <- 0
     train_sets[[i]] <- train_sets[[i]] / colSums(train_sets[[i]]) * 10000 # or matrix
@@ -185,7 +187,6 @@ preprocessing <- function(seuratlist) {
   train_sets <- do.call("cbind", train_sets)
   return(list(train_sets = train_sets, celltypes = celltypes, platforms = platforms, genes = genes))
 }
-
 
 trainDatasets <- torch::dataset(
   name = "trainDatasets",
@@ -261,7 +262,7 @@ train <- function(train_data, params, celltypes, platforms, nfeatures, nct, npla
   loss_domain <- loss_domain$to(device = device)
   train_loader <- torch::dataloader(dataset = train_data, batch_size = batch_size, shuffle = TRUE, drop_last = TRUE)
   len_train_loader <- length(train_loader)
-  print("Begin training")
+  message("Begin training")
   for (epoch in 1:n_epoch) {
     i <- 1
     coro::loop(for (l_n in train_loader) {
@@ -295,6 +296,6 @@ train <- function(train_data, params, celltypes, platforms, nfeatures, nct, npla
     })
     cat(sprintf("Loss at epoch %d: %3f\n", epoch, loss_total$item()))
   }
-  print("Finish Training")
+  message("Finish Training")
   return(network)
 }

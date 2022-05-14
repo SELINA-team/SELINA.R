@@ -5,7 +5,7 @@
 \title{Fine-tuning and predict for the query data}
 \usage{
 query_predict(
-  query_expr,
+  path_query,
   model,
   path_meta,
   path_out,
@@ -18,7 +18,7 @@ query_predict(
 )
 }
 \arguments{
-\item{query_expr}{File path of the query data matrix(rds format).}
+\item{path_query}{File path of the query data matrix(rds format).}
 
 \item{model}{File path of the pre-trained model.}
 
