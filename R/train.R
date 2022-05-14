@@ -1,6 +1,6 @@
 #' Train model based on your own data
 #'
-#' @param path_in File path of training datasets.
+#' @param seuratlist A list of seurat object.
 #' @param path_out File path of the output model.
 #' @param prefix Prefix of the output files. DEFAULT: pre-trained.
 #'
@@ -12,12 +12,12 @@
 #' @export
 #'
 #' @examples
-train_model <- function(path_in, path_out, prefix) {
+train_model <- function(seuratlist, path_out, prefix = 'pre-trained') {
 
   params_train <- c(0.0001, 50, 128)
   device <- if (cuda_is_available()) torch_device("cuda:0") else "cpu"
 
-  res_pre <- preprocessing(path_in)
+  res_pre <- preprocessing(seuratlist)
   train_data <- res_pre$train_sets
   celltypes <- res_pre$celltypes
   platforms <- res_pre$platforms
@@ -37,6 +37,8 @@ train_model <- function(path_in, path_out, prefix) {
   model_meta <- list(genes = genes, celltypes = ct_dic)
 
   saveRDS(model_meta, paste0(path_out, "/", prefix, "_meta.rds"))
+  
+  return(network)
   print("All done")
 }
 
@@ -96,16 +98,6 @@ se_SMOTE <- function(X, target, target_name, K = 5, add_size = 1000) {
 }
 
 
-read_expr <- function(path) {
-  expr <- data.table::fread(path, sep = "\t")
-  expr <- data.frame(expr, stringsAsFactors = F, check.names = F)
-  rownames(expr) <- expr$Gene
-  expr <- expr[, -match("Gene", colnames(expr))]
-  return(expr)
-}
-
-
-
 label2dic <- function(label) {
   label_set <- unique(label)
   label_list <- list()
@@ -115,17 +107,19 @@ label2dic <- function(label) {
   return(label_list)
 }
 
-preprocessing <- function(path_in) {
-  samples <- sort(list.files(path_in, pattern = "*_expr.txt", full.names = T))
+preprocessing <- function(seuratlist) {
+  message("Loading data")
+  
+  train_sets = seuratlist
+  # samples <- sort(list.files(path_in, pattern = "*rds", full.names = T))
   metas <- sort(list.files(path_in, pattern = "*_meta.txt", full.names = T))
-  train_sets <- list()
+  # train_sets <- list()
   celltypes <- list()
   platforms <- list()
   genes <- list()
-  message("Loading data")
 
   for (i in 1:length(samples)) {
-    train_sets[[i]] <- read_expr(samples[i])
+    # train_sets[[i]] <- readRDS(samples[i])@assays$RNA@counts
     meta <- read.csv(metas[i], sep = "\t", header = T)
     celltype <- meta[, "Celltype"]
     platform <- meta[, "Platform"]
@@ -133,7 +127,7 @@ preprocessing <- function(path_in) {
     platforms[[i]] <- platform
     genes[[i]] <- rownames(train_sets[[i]])
   }
-
+  
   genes <- Reduce(intersect, genes)
   ct_freqs <- table(unlist(celltypes, use.names = F))
   max_n <- max(ct_freqs)
@@ -304,7 +298,3 @@ train <- function(train_data, params, celltypes, platforms, nfeatures, nct, npla
   print("Finish Training")
   return(network)
 }
-
-
-
-# train_model(path_in=path_in, path_out=path_out, prefix=prefix)

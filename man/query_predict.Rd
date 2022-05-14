@@ -5,8 +5,9 @@
 \title{Fine-tuning and predict for the query data}
 \usage{
 query_predict(
-  query_expr,
+  seuratobj,
   model,
+  path_meta,
   path_out,
   outprefix,
   disease = FALSE,
@@ -17,9 +18,7 @@ query_predict(
 )
 }
 \arguments{
-\item{query_expr}{File path of the query data matrix}
-
-\item{model}{File path of the pre-trained model}
+\item{model}{File path of the pre-trained model.}
 
 \item{path_out}{File path of the output files.}
 
@@ -34,6 +33,8 @@ query_predict(
 \item{cell_cutoff}{Cutoff for number of cells with the same cell type in 10 nearest neighbor cells(only used when the input is single-cell level expression matrix). DEFAULT: 5.}
 
 \item{prob_cutoff}{Cutoff for prediction probability. DEFAULT: 0.9.}
+
+\item{query_expr}{File path of the query data matrix(rds format).}
 }
 \value{
 Prediction results and corresponding probability for query. This step will output eight files for 'single' mode and four files for 'cluster' mode

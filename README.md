@@ -2,7 +2,7 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 # SELINA
-
+image.png
 <!-- badges: start -->
 
 <!-- badges: end -->
@@ -10,7 +10,7 @@
 SELINA is a deep learning-based framework for single cell assignment
 with multiple references. The algorithm consists of three main steps:
 cell type balancing, pre-training and fine-tuning. The rare cell types
-in reference data are first oversampled using SMOTE(Synthetic Minority
+in reference image.pngdata are first oversampled using SMOTE(Synthetic Minority
 Oversampling Technique), and then the reference data is trained with a
 supervised deep learning framework using MADA(Multi-Adversarial Domain
 Adaptation). An autoencoder is subsquently used to fine-tune the
@@ -36,7 +36,7 @@ devtools::install_github("SELINA-team/SELINA.R")
 ### Preprocess of query data
 
 You could preprocess query data with steps in
-[SELINA.py](https://github.com/SELINA-team/SELINA.py#preprocess-of-query-data)
+[SELINA.py](https://github.com/SELINA-team/SELINA.py#preprocess-of-query-data). You will get rds object for each traning dataset.
 
 ### Pre-training of the reference data
 
@@ -47,7 +47,11 @@ parameter details with command `?train_model`.
 
 ``` r
 library(SELINA)
-train_model(path_in = "demo/reference_data",
+# Read in rds file for training.
+train_rds1 <- readRDS(path_rds1)
+train_rds2 <- readRDS(path_rds2)
+seuratlist = list(train_rds1, train_rds2)
+model = train_model(seuratlist,
             path_out = "train_output",
             prefix = 'pre-trained')
 ```
@@ -56,7 +60,7 @@ In this step, two output files will be generated in the train\_output
 folder.  
 1\. `pre-trained_params.pt` : a file containing all parameters of the
 trained model  
-2\. `pre-trained_meta.pkl` : a file containing the cell types and genes
+2\. `pre-trained_meta.rds` : a file containing the cell types and genes
 of the reference data
 
 ### Predict
@@ -68,13 +72,14 @@ parameter details with command `?train_model`.
 
 ``` r
 library(SELINA)
-query_predict(query_expr = "demo/query_data/query.txt",
-              model = "train_output/pre-trained_params.pt"
-              path_out = 'predict_output',
+model <- read_model(path_model)
+query_predict(query_expr,
+              model,
+              path_meta,
+              path_out = '.',
               outprefix = 'demo', 
               disease = FALSE, 
               mode = 'single',
-              seurat = 'query_res.rds',
               cell_cutoff = 5,
               prob_cutoff = 0.9)
 ```

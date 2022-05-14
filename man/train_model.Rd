@@ -4,10 +4,10 @@
 \alias{train_model}
 \title{Train model based on your own data}
 \usage{
-train_model(path_in, path_out, prefix)
+train_model(seuratlist, path_out, prefix = "pre-trained")
 }
 \arguments{
-\item{path_in}{File path of training datasets.}
+\item{seuratlist}{A list of seurat object.}
 
 \item{path_out}{File path of the output model.}
 
