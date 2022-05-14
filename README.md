@@ -2,7 +2,6 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 # SELINA
-image.png
 <!-- badges: start -->
 
 <!-- badges: end -->
