@@ -4,7 +4,17 @@
 \alias{query_predict}
 \title{Fine-tuning and predict for the query data}
 \usage{
-query_predict(query_expr, model, path_out, outprefix, disease, mode)
+query_predict(
+  query_expr,
+  model,
+  path_out,
+  outprefix,
+  disease = FALSE,
+  mode = "single",
+  seurat,
+  cell_cutoff = 5,
+  prob_cutoff = 0.9
+)
 }
 \arguments{
 \item{query_expr}{File path of the query data matrix}
@@ -18,6 +28,12 @@ query_predict(query_expr, model, path_out, outprefix, disease, mode)
 \item{disease}{Depend on your data is in some disease condition or not, choose from 'TRUE' or 'FALSE'. DEFAULT: 'FALSE'.}
 
 \item{mode}{Single-cell level input or cluster level input, choose from 'single' or 'cluster'. DEFAULT: 'single'.}
+
+\item{seurat}{File path of the seurat object.}
+
+\item{cell_cutoff}{Cutoff for number of cells with the same cell type in 10 nearest neighbor cells(only used when the input is single-cell level expression matrix). DEFAULT: 5.}
+
+\item{prob_cutoff}{Cutoff for prediction probability. DEFAULT: 0.9.}
 }
 \value{
 Prediction results and corresponding probability for each query cell.
