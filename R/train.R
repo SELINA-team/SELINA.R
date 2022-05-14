@@ -9,39 +9,39 @@
 #' @importFrom utils read.csv write.table
 #' @importFrom torch nn_sequential cuda_is_available torch_device torch_tensor torch_unsqueeze dataset nn_module dataloader nn_cross_entropy_loss nn_mse_loss optim_adam torch_float torch_load torch_save autograd_function with_no_grad
 
-#' @export 
+#' @export
 #'
 #' @examples
 train_model <- function(path_in, path_out, prefix) {
+
+  params_train <- c(0.0001, 50, 128)
+  device <- if (cuda_is_available()) torch_device("cuda:0") else "cpu"
+
   res_pre <- preprocessing(path_in)
   train_data <- res_pre$train_sets
   celltypes <- res_pre$celltypes
   platforms <- res_pre$platforms
   genes <- res_pre$genes
-  
+
   ct_dic <- label2dic(celltypes)
   plat_dic <- label2dic(platforms)
   nfeatures <- nrow(train_data)
   nct <- length(ct_dic)
   nplat <- length(plat_dic)
-  
+
   network <- train(
     train_data, params_train, celltypes, platforms, nfeatures,
     nct, nplat, ct_dic, plat_dic, device
   )
   torch_save(network, paste0(path_out, "/", prefix, "_params.pt"))
   model_meta <- list(genes = genes, celltypes = ct_dic)
-  
+
   saveRDS(model_meta, paste0(path_out, "/", prefix, "_meta.rds"))
   print("All done")
 }
 
-## parameters for training
-params_train <- c(0.0001, 50, 128)
-device <- if (cuda_is_available()) torch_device("cuda:0") else "cpu"
 
 se_SMOTE <- function(X, target, target_name, K = 5, add_size = 1000) {
-
   ncD <- ncol(X)
   n_target <- table(target)
   multiP <- add_size / n_target[target_name]
