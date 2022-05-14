@@ -22,7 +22,7 @@ And the development version from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("xiaoyingshi/SELINAr")
+devtools::install_github("xiaoyingshi/SELINA.R")
 ```
 
 ## Example
