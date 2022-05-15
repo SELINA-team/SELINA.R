@@ -1,9 +1,6 @@
 #' Train model based on your own data
 #'
-#' @param seuratlist A list of seurat object.
-#' @param path_in File path of reference meta files.
-#' @param path_out File path of the output model.
-#' @param prefix Prefix of the output files. DEFAULT: pre-trained.
+#' @param seuratlist A list of seurat object for training.
 #'
 #' @return An MADA model.
 #' @importFrom stats runif
@@ -15,12 +12,12 @@
 #' @export
 #'
 #' @examples
-train_model <- function(seuratlist, path_in, path_out, prefix = 'pre-trained') {
+train_model <- function(seuratlist) {
 
   params_train <- c(0.0001, 50, 128)
   device <- if (cuda_is_available()) torch_device("cuda:0") else "cpu"
 
-  res_pre <- preprocessing(seuratlist, path_in)
+  res_pre <- preprocessing(seuratlist)
   train_data <- res_pre$train_sets
   celltypes <- res_pre$celltypes
   platforms <- res_pre$platforms
@@ -36,15 +33,11 @@ train_model <- function(seuratlist, path_in, path_out, prefix = 'pre-trained') {
     train_data, params_train, celltypes, platforms, nfeatures,
     nct, nplat, ct_dic, plat_dic, device
   )
-  torch_save(network, paste0(path_out, "/", prefix, "_params.pt"))
   model_meta <- list(genes = genes, celltypes = ct_dic)
-
-  saveRDS(model_meta, paste0(path_out, "/", prefix, "_meta.rds"))
   
-  return(network)
   message("All done")
+  return(list(network=network, meta=model_meta))
 }
-
 
 se_SMOTE <- function(X, target, target_name, K = 5, add_size = 1000) {
   ncD <- ncol(X)
@@ -100,7 +93,6 @@ se_SMOTE <- function(X, target, target_name, K = 5, add_size = 1000) {
   return(D_result)
 }
 
-
 label2dic <- function(label) {
   label_set <- unique(label)
   label_list <- list()
@@ -110,22 +102,18 @@ label2dic <- function(label) {
   return(label_list)
 }
 
-preprocessing <- function(seuratlist, path_in) {
+preprocessing <- function(seuratlist) {
   message("Loading data")
   
   train_sets = sapply(seuratlist, function(rds) rds@assays$RNA@data, USE.NAMES = F)
-  metas <- sort(list.files(path_in, pattern = "*_meta.txt", full.names = T))
+  
   celltypes <- list()
   platforms <- list()
   genes <- list()
-
-  for (i in 1:length(metas)) {
-    meta <- read.csv(metas[i], sep = "\t", header = T)
-    celltype <- meta[, "Celltype"]
-    platform <- meta[, "Platform"]
-    celltypes[[i]] <- celltype
-    platforms[[i]] <- platform
-    genes[[i]] <- rownames(train_sets[[i]])
+  for (i in 1:length(seuratlist)) {
+    celltypes[[i]] <- seuratlist[[i]]$Celltype
+    platforms[[i]] <- seuratlist[[i]]$Platform
+    genes[[i]] <- rownames(seuratlist[[i]])
   }
   
   genes <- Reduce(intersect, genes)
@@ -146,7 +134,7 @@ preprocessing <- function(seuratlist, path_in) {
     }
   }
   message('Start SMOTE')
-  for (i in 1:length(metas)) {
+  for (i in 1:length(seuratlist)) {
     sample_ct_freq <- list()
     ct_freq <- table(celltypes[i])
     if (length(ct_freq) > 1) {
@@ -178,7 +166,7 @@ preprocessing <- function(seuratlist, path_in) {
   message('SMOTE Done')
   platforms <- unlist(platforms, use.names = F)
   celltypes <- unlist(celltypes, use.names = F)
-  for (i in 1:length(metas)) {
+  for (i in 1:length(seuratlist)) {
     train_sets[[i]] <- train_sets[[i]][match(genes, rownames(train_sets[[i]])), ]
     train_sets[[i]][is.na(train_sets[[i]])] <- 0
     train_sets[[i]] <- train_sets[[i]] / colSums(train_sets[[i]]) * 10000 # or matrix
@@ -222,7 +210,6 @@ GRL <- torch::autograd_function(
     )
   }
 )
-
 
 MADA <- torch::nn_module(
   "class_MADA",

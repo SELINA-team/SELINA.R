@@ -3,7 +3,7 @@
 #' @param path_model Path for loading model.
 #'
 #' @return A MADA object.
-#' @importFrom torch torch_load
+#' @importFrom torch torch_load cuda_is_available
 #' @export
 #'
 #' @examples

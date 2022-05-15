@@ -39,22 +39,22 @@ You could preprocess query data with steps in
 
 ### Pre-training of the reference data
 
-This is a basic example which shows you how to train a MADA model with
-your own data.  
+Train model with `train_model`. You will get a list, which includes a training model and it's meta information.
+
 Files used in here are included in folder `demo`. You can check
 parameter details with command `?train_model`.
 
 ``` r
 library(SELINA)
 
-# Read in rds file for training.
-train_rds1 <- readRDS(path_rds1)
-train_rds2 <- readRDS(path_rds2)
+## Read in train data (seurat object) with meta information (`Celltype` and `Platform`). 
+train_rds1 <- readRDS('demo/reference_data/train1_res.rds')
+train_rds2 <- readRDS('demo/reference_data/train2_res.rds')
 seuratlist = list(train_rds1, train_rds2)
-model = train_model(seuratlist,
-            path_in,
-            path_out,
-            prefix = 'pre-trained')
+model = train_model(seuratlist)
+
+## You can save the model you trained.
+save_model(model, path_out, prefix)
 ```
 
 In this step, two output files will be generated in the path_out
@@ -73,14 +73,14 @@ parameter details with command `?query_predict`.
 ``` r
 library(SELINA)
 
-# If you predict directly after training, then can pass the load model path step.
+## If you predict directly after training, then can pass the next load model step.
 model <- read_model(path_model)
 
-# Predict query cell with SELINA
-query_predict(path_query,
+## Predict query cell with SELINA
+queryObj = readRDS(path_query)
+query_predict(queryObj,
               model,
-              path_meta,
-              path_out = '.',
+              path_out,
               outprefix = 'demo', 
               disease = FALSE, 
               mode = 'single',
