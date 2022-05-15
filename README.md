@@ -50,8 +50,8 @@ library(SELINA)
 ## Read in train data (seurat object) with meta information (`Celltype` and `Platform`). 
 train_rds1 <- readRDS('demo/reference_data/train1_res.rds')
 train_rds2 <- readRDS('demo/reference_data/train2_res.rds')
-seuratlist = list(train_rds1, train_rds2)
-model = train_model(seuratlist)
+seuratlist <- list(train_rds1, train_rds2)
+model <- train_model(seuratlist)
 
 ## You can save the model you trained.
 save_model(model, path_out, prefix)
@@ -77,15 +77,15 @@ library(SELINA)
 model <- read_model(path_model)
 
 ## Predict query cell with SELINA
-queryObj = readRDS(path_query)
-query_predict(queryObj,
-              model,
-              path_out,
-              outprefix = 'demo', 
-              disease = FALSE, 
-              mode = 'single',
-              cell_cutoff = 5,
-              prob_cutoff = 0.9)
+queryObj <- readRDS(path_query)
+query_result <- query_predict(queryObj,
+                          model,
+                          path_out,
+                          outprefix = 'demo', 
+                          disease = FALSE, 
+                          mode = 'single',
+                          cell_cutoff = 5,
+                          prob_cutoff = 0.9)
 ```
 
 This step will output eight files in the predict\_output folder. Note
