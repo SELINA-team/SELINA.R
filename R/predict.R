@@ -42,9 +42,9 @@ query_predict <- function(path_query, model, path_meta, path_out, outprefix, dis
   network <- Autoencoder(network, nfeatures, nct)
   if ((!disease) & (mode != "cluster")) {
     message("Fine-tuning1")
-    network <- tune1(query_expr, network, params_tune1)
+    network <- tune1(query_expr, network, params_tune1, device)
     message("Fine-tuning2")
-    network <- tune2(query_expr, network, params_tune2)
+    network <- tune2(query_expr, network, params_tune2, device)
   }
   network <- Classifier(network)$to(device = device)
   test_res <- test(query_expr, network, ct_dic)
@@ -127,7 +127,7 @@ Classifier <- torch::nn_module(
   }
 )
 # tune1(query_expr, network, params_tune1)
-tune1 <- function(test_df, network, params) {
+tune1 <- function(test_df, network, params, device) {
   test_dat <- Datasets(test_df)
   lr <- params[1]
   n_epoch <- params[2]
@@ -158,7 +158,7 @@ tune1 <- function(test_df, network, params) {
 }
 
 
-tune2 <- function(test_df, network, params) {
+tune2 <- function(test_df, network, params, device) {
   test_dat <- Datasets(test_df)
   lr <- params[1]
   n_epoch <- params[2]
@@ -387,3 +387,4 @@ cluster_quality <- function(SeuratObj, filtered_label, pred_prob, path_out, outp
   write.table(pred_prob, file.path(path_out, paste0(outprefix, "_prob.txt")), col.names = TRUE, row.names = FALSE, quote = FALSE, sep = "\t")
   write.table(unknown_percent, file.path(path_out, paste0(outprefix, "_unknown_percent.txt")), col.names = TRUE, row.names = FALSE, quote = FALSE, sep = "\t")
 }
+

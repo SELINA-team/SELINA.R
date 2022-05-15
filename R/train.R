@@ -227,6 +227,7 @@ GRL <- torch::autograd_function(
 MADA <- torch::nn_module(
   "class_MADA",
   initialize = function(nfeatures, nct, nplat) {
+    self$nct <- nct
     self$feature <- torch::nn_sequential(torch::nn_linear(nfeatures, 100), torch::nn_relu(), torch::nn_dropout(p = 0.5, inplace = FALSE))
     self$class_classifier <- torch::nn_sequential(torch::nn_linear(100, 50), torch::nn_relu(), torch::nn_dropout(p = 0.5, inplace = FALSE), torch::nn_linear(50, nct))
     self$domain_classifier <- torch::nn_module_list(lapply(1:nct, function(x) {
