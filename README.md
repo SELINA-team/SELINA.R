@@ -79,13 +79,13 @@ model <- read_model(path_model)
 ## Predict query cell with SELINA
 queryObj <- readRDS(path_query)
 query_result <- query_predict(queryObj,
-                          model,
-                          path_out,
-                          outprefix = 'demo', 
-                          disease = FALSE, 
-                          mode = 'single',
-                          cell_cutoff = 5,
-                          prob_cutoff = 0.9)
+                              model,
+                              path_out,
+                              outprefix = 'demo', 
+                              disease = FALSE, 
+                              mode = 'single',
+                              cell_cutoff = 5,
+                              prob_cutoff = 0.9)
 ```
 
 This step will output eight files in the predict\_output folder. Note
