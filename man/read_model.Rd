@@ -15,3 +15,6 @@ A MADA object.
 \description{
 read_model
 }
+\examples{
+model <- read_model(path_model)
+}

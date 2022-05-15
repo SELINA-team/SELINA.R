@@ -11,7 +11,7 @@
 
 #' @export
 #'
-#' @examples
+#' @examples model <- train_model(seuratlist)
 train_model <- function(seuratlist) {
 
   params_train <- c(0.0001, 50, 128)

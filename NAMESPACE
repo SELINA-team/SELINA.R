@@ -2,6 +2,7 @@
 
 export(query_predict)
 export(read_model)
+export(save_model)
 export(train_model)
 import(Seurat)
 import(dbscan)

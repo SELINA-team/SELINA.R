@@ -21,7 +21,15 @@
 #' @import presto
 #' @export
 #'
-#' @examples
+#' @examples queryObj <- readRDS(path_query)
+#' @examples query_result <- query_predict(queryObj,
+#' @examples                               model,
+#' @examples                               path_out,
+#' @examples                               outprefix = 'demo', 
+#' @examples                               disease = FALSE, 
+#' @examples                               mode = 'single',
+#' @examples                               cell_cutoff = 5,
+#' @examples                               prob_cutoff = 0.9)
 query_predict <- function(queryObj, model, path_out, outprefix, disease = FALSE, mode = "single", cell_cutoff = 5, prob_cutoff = 0.9) {
   device <- if (torch::cuda_is_available()) torch::torch_device("cuda:0") else "cpu"
   params_tune1 <- c(0.0005, 50, 128)

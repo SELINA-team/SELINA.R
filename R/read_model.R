@@ -6,7 +6,7 @@
 #' @importFrom torch torch_load cuda_is_available
 #' @export
 #'
-#' @examples
+#' @examples model <- read_model(path_model)
 read_model <- function(path_model) {
   device <- if (cuda_is_available()) torch_device("cuda:0") else "cpu"
   model <- torch_load(path_model, device = device)

@@ -4,20 +4,17 @@
 \alias{train_model}
 \title{Train model based on your own data}
 \usage{
-train_model(seuratlist, path_in, path_out, prefix = "pre-trained")
+train_model(seuratlist)
 }
 \arguments{
-\item{seuratlist}{A list of seurat object.}
-
-\item{path_in}{File path of reference meta files.}
-
-\item{path_out}{File path of the output model.}
-
-\item{prefix}{Prefix of the output files. DEFAULT: pre-trained.}
+\item{seuratlist}{A list of seurat object for training.}
 }
 \value{
 An MADA model.
 }
 \description{
 Train model based on your own data
+}
+\examples{
+model <- train_model(seuratlist)
 }
