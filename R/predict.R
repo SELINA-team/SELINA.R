@@ -47,7 +47,7 @@ query_predict <- function(path_query, model, path_meta, path_out, outprefix, dis
     network <- tune2(query_expr, network, params_tune2, device)
   }
   network <- Classifier(network)$to(device = device)
-  test_res <- test(query_expr, network, ct_dic)
+  test_res <- test(query_expr, network, ct_dic, device)
   pred_labels <- test_res$pred_labels
   pred_prob <- test_res$pred_prob
 
@@ -70,12 +70,10 @@ query_predict <- function(path_query, model, path_meta, path_out, outprefix, dis
   message("Finish downstream analysis")
 }
 
-
-
 merge_query <- function(genes, query_expr) {
   model_expr <- data.frame(genes = rnorm(length(genes)), stringsAsFactors = F)
   rownames(model_expr) <- genes
-  query_expr <- merge(model_expr, query_expr, by = "row.names")
+  query_expr <- merge(model_expr, query_expr, by = "row.names", all.x=T)
   rownames(query_expr) <- query_expr$Row.names
   query_expr <- query_expr[, -match("genes", colnames(query_expr))]
   query_expr <- query_expr[, -1]
@@ -193,7 +191,7 @@ tune2 <- function(test_df, network, params, device) {
 }
 
 
-test <- function(test_df, network, ct_dic) {
+test <- function(test_df, network, ct_dic, device) {
   test_dat <- Datasets(test_df)
   ct_dic_rev <- split(rep(names(ct_dic), sapply(ct_dic, length)), unlist(ct_dic))
   test_loader <- torch::dataloader(dataset = test_dat, batch_size = ncol(test_df), shuffle = FALSE)
