@@ -44,6 +44,7 @@ Train model with `train_model`. You will get a list, which includes a training m
 Files used in here are included in folder `demo`. You can check
 parameter details with command `?train_model`.
 
+*_NOTE:_* Input train data should be in seurat rds format,  with meta information `Celltype` and `Platform` storing in train_rds@meta.data.
 ``` r
 library(SELINA)
 
