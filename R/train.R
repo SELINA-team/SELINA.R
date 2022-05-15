@@ -237,7 +237,7 @@ MADA <- torch::nn_module(
   forward = function(input_data, alpha, nct) {
     features <- self$feature(input_data)
     class_logits <- self$class_classifier(features)
-    class_predictions <- torch::nn_softmax(dim = 1)
+    class_predictions <- torch::nn_softmax(dim = 2)
     reverse_features <- GRL(features, alpha)
     domain_logits <- list()
     for (class_idx in 1:nct) {

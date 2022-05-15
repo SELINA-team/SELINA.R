@@ -24,7 +24,7 @@
 #' @export
 #'
 #' @examples
-query_predict <- function(path_query, model, path_meta, path_out, outprefix, disease = FALSE, mode = "single", seurat, cell_cutoff = 5, prob_cutoff = 0.9) {
+query_predict <- function(path_query, model, path_meta, path_out, outprefix, disease = FALSE, mode = "single", cell_cutoff = 5, prob_cutoff = 0.9) {
   device <- if (torch::cuda_is_available()) torch::torch_device("cuda:0") else "cpu"
   params_tune1 <- c(0.0005, 50, 128)
   params_tune2 <- c(0.0001, 10, 128)
@@ -64,7 +64,7 @@ query_predict <- function(path_query, model, path_meta, path_out, outprefix, dis
 
   message("Begin downstream analysis")
   predict_downstream(
-    mode, seurat, cell_cutoff, prob_cutoff, path_out,
+    mode, path_query, cell_cutoff, prob_cutoff, path_out,
     outprefix, pred_labels, pred_prob
   )
   message("Finish downstream analysis")
@@ -117,7 +117,7 @@ Autoencoder <- torch::nn_module(
 Classifier <- torch::nn_module(
   "class_Classifier",
   initialize = function(network) {
-    self$classifier <- do.call(torch::nn_sequential, c(unlist(network$encoder$children[-length(network$encoder$children)], use.names = F), torch::nn_softmax(dim = 1)))
+    self$classifier <- do.call(torch::nn_sequential, c(unlist(network$encoder$children[-length(network$encoder$children)], use.names = F), torch::nn_softmax(dim = 2)))
   },
   forward = function(input_data) {
     output <- self$classifier(input_data)
@@ -214,16 +214,16 @@ test <- function(test_df, network, ct_dic, device) {
 }
 
 
-predict_downstream <- function(mode, seurat, cell_cutoff, prob_cutoff, path_out, outprefix, pred_label, pred_prob) {
+predict_downstream <- function(mode, path_query, cell_cutoff, prob_cutoff, path_out, outprefix, pred_labels, pred_prob) {
   # Load data
-  SeuratObj <- readRDS(seurat)
-  pred_label <- read.table(pred_label, header = FALSE, sep = "\t")[, 1]
-  pred_prob <- read.table(pred_prob, header = TRUE, sep = "\t", row.names = 1)
+  SeuratObj <- readRDS(path_query)
+  # pred_label <- read.table(pred_label, header = FALSE, sep = "\t")[, 1]
+  # pred_prob <- read.table(pred_prob, header = TRUE, sep = "\t", row.names = 1)
 
   # main step
   if (mode == "single") {
     # Filter cells with low prediction score
-    filtered_label <- pred_filter(SeuratObj, pred_label, pred_prob, cell_cutoff, prob_cutoff)
+    filtered_label <- pred_filter(SeuratObj, pred_labels, pred_prob, cell_cutoff, prob_cutoff)
 
     # Generate plots and files indicating the prediction quality for each cluster
     cluster_quality(SeuratObj, filtered_label, pred_prob, path_out, outprefix)
@@ -242,9 +242,9 @@ predict_downstream <- function(mode, seurat, cell_cutoff, prob_cutoff, path_out,
   } else {
     SeuratObj$pred <- "pred"
     prob <- apply(pred_prob, MARGIN = 1, max)
-    pred_label[prob < prob_cutoff] <- "Unknown"
-    for (i in 1:length(pred_label)) {
-      SeuratObj$pred[SeuratObj$seurat_clusters == as.character(i - 1)] <- pred_label[i]
+    pred_labels[prob < prob_cutoff] <- "Unknown"
+    for (i in 1:length(pred_labels)) {
+      SeuratObj$pred[SeuratObj$seurat_clusters == as.character(i - 1)] <- pred_labels[i]
     }
     if (length(unique(SeuratObj$pred[SeuratObj$pred != "Unknown"])) > 1) {
       cluster.genes <- FindMarkers(object = SeuratObj[, SeuratObj$pred != "Unknown"], celltypes = SeuratObj$pred[SeuratObj$pred != "Unknown"])
@@ -305,13 +305,13 @@ FindMarkers <- function(object, celltypes, features = NULL, min.pct = 0.1, logfc
 }
 
 # Filter cells with low prediction probability
-pred_filter <- function(SeuratObj, pred_label, pred_prob, cell_cutoff, prob_cutoff) {
+pred_filter <- function(SeuratObj, pred_labels, pred_prob, cell_cutoff, prob_cutoff) {
   neighbor_id <- kNN(SeuratObj@reductions[["umap"]]@cell.embeddings, k = 10)$id
   pred_prob <- apply(pred_prob, MARGIN = 1, max)
-  filtered_label <- pred_label
-  for (cell_index in 1:length(pred_label)) {
-    neighbor_cts <- pred_label[neighbor_id[cell_index, ]]
-    ct <- pred_label[cell_index]
+  filtered_label <- pred_labels
+  for (cell_index in 1:length(pred_labels)) {
+    neighbor_cts <- pred_labels[neighbor_id[cell_index, ]]
+    ct <- pred_labels[cell_index]
     prob <- pred_prob[cell_index]
     nsame <- length(which(neighbor_cts == ct))
     if (nsame < cell_cutoff | prob < prob_cutoff) {
