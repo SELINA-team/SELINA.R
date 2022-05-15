@@ -48,15 +48,6 @@ query_predict <- function(queryObj, model, path_out, outprefix, disease = FALSE,
   pred_labels <- test_res$pred_labels
   pred_prob <- test_res$pred_prob
 
-  # ## make directory path_out
-  # write.table(data.frame(pred_labels, stringsAsFactors = F),
-  #   paste0(path_out, "/", outprefix, "_predictions.txt"),
-  #   row.names = F, sep = "\t", quote = F
-  # )
-  # write.table(data.frame(pred_prob, stringsAsFactors = F),
-  #   paste0(path_out, "/", outprefix, "_probability.txt"),
-  #   sep = "\t", quote = F
-  # )
   message("Finish Prediction")
 
   message("Begin downstream analysis")
@@ -122,7 +113,7 @@ Classifier <- torch::nn_module(
     return(output)
   }
 )
-# tune1(query_expr, network, params_tune1)
+
 tune1 <- function(test_df, network, params, device) {
   test_dat <- Datasets(test_df)
   lr <- params[1]
@@ -213,8 +204,6 @@ test <- function(test_df, network, ct_dic, device) {
 
 
 predict_downstream <- function(mode, queryObj, cell_cutoff, prob_cutoff, path_out, outprefix, pred_labels, pred_prob) {
-  # Load data
-
   # main step
   if (mode == "single") {
     # Filter cells with low prediction score

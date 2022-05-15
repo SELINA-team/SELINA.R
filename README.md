@@ -47,13 +47,13 @@ parameter details with command `?train_model`.
 ``` r
 library(SELINA)
 
-## Read in train data (seurat object) with meta information (`Celltype` and `Platform`). 
+## Read in train data (seurat object) with meta information(Columns `Celltype` and `Platform` are required). 
 train_rds1 <- readRDS('demo/reference_data/train1_res.rds')
 train_rds2 <- readRDS('demo/reference_data/train2_res.rds')
 seuratlist <- list(train_rds1, train_rds2)
 model <- train_model(seuratlist)
 
-## You can save the model you trained.
+## You can save the model.
 save_model(model, path_out, prefix)
 ```
 
@@ -66,7 +66,8 @@ of the reference data
 
 ### Predict
 
-This is a basic example which shows you how to do annotation.  
+Annotate query data with `query_predict`. You will get a list, which includes prediction results and corresponding probability for query data
+
 Files used in here are included in folder `demo`. You can check
 parameter details with command `?query_predict`.
 
@@ -76,7 +77,7 @@ library(SELINA)
 ## If you predict directly after training, then can pass the next load model step.
 model <- read_model(path_model)
 
-## Predict query cell with SELINA
+## Predict query cell with SELINA.
 queryObj <- readRDS(path_query)
 query_result <- query_predict(queryObj,
                               model,
