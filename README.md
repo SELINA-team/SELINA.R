@@ -61,13 +61,13 @@ save_model(model, path_out, prefix)
 In this step, two output files will be generated in the path_out
 folder.  
 1\. `pre-trained_params.pt` : a file containing all parameters of the
-trained model  
+trained model.  
 2\. `pre-trained_meta.rds` : a file containing the cell types and genes
-of the reference data
+of the reference data.
 
 ### Predict
 
-Annotate query data with `query_predict`. You will get a list, which includes prediction results and corresponding probability for query data
+Annotate query data with `query_predict`. You will get a list, which includes prediction results and corresponding probability for query data.
 
 Files used in here are included in folder `demo`. You can check
 parameter details with command `?query_predict`.

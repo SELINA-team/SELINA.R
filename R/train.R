@@ -11,7 +11,7 @@
 
 #' @export
 #'
-#' @examples model <- train_model(seuratlist)
+#' @examples model <- train_model(list(rds1, rds2))
 train_model <- function(seuratlist) {
 
   params_train <- c(0.0001, 50, 128)
@@ -104,9 +104,7 @@ label2dic <- function(label) {
 
 preprocessing <- function(seuratlist) {
   message("Loading data")
-  
   train_sets = sapply(seuratlist, function(rds) rds@assays$RNA@data, USE.NAMES = F)
-  
   celltypes <- list()
   platforms <- list()
   genes <- list()
@@ -115,7 +113,6 @@ preprocessing <- function(seuratlist) {
     platforms[[i]] <- seuratlist[[i]]$Platform
     genes[[i]] <- rownames(seuratlist[[i]])
   }
-  
   genes <- Reduce(intersect, genes)
   ct_freqs <- table(unlist(celltypes, use.names = F))
   max_n <- max(ct_freqs)
@@ -129,41 +126,47 @@ preprocessing <- function(seuratlist) {
   }
   for (i in 1:length(ct_freqs)) {
     ct <- names(ct_freqs[i])
-    if (ct_freqs[i] <= sample_n) {
+    if (ct_freqs[i] < sample_n) {
       rct_freqs[ct] <- ct_freqs[i]
     }
   }
-  message('Start SMOTE')
-  for (i in 1:length(seuratlist)) {
-    sample_ct_freq <- list()
-    ct_freq <- table(celltypes[i])
-    if (length(ct_freq) > 1) {
-      for (j in 1:length(rct_freqs)) {
-        ct <- names(rct_freqs[j])
-        freq <- rct_freqs[j]
-        if ((ct %in% names(ct_freq)) & (ct_freq[ct] > 6)) {
-          sample_ct_freq[ct] <- round(sample_n * ct_freq[ct] / freq)
+  if(length(rct_freqs)>0){
+    message('Start SMOTE')
+    for (i in 1:length(seuratlist)) {
+      sample_ct_freq <- list()
+      ct_freq <- table(celltypes[i])
+      if (length(ct_freq) > 1) {
+        for (j in 1:length(rct_freqs)) {
+          ct <- names(rct_freqs[j])
+          freq <- rct_freqs[j]
+          if ((ct %in% names(ct_freq)) & (ct_freq[ct] > 6)) {
+            sample_ct_freq[ct] <- round(sample_n * ct_freq[ct] / freq)
+          }
         }
+        tmp <- data.frame(t(as.matrix(train_sets[[i]])), stringsAsFactors = F, check.names = F)
+        tmp$class <- celltypes[[i]]
+        tmp_N <- subset(tmp, !(tmp$class %in% names(sample_ct_freq)))
+        celltype_N <- subset(celltypes[[i]], !(celltypes[[i]] %in% names(sample_ct_freq)))
+        tmp_smote <- tmp_N
+        celltype_smote <- celltype_N
+        ### smote for rare cell-types
+        for (t_name in names(sample_ct_freq)) {
+          tmp_target <- subset(tmp, tmp$class == t_name)
+          res <- se_SMOTE(tmp_target[, -ncol(tmp_target)], target = tmp_target$class, target_name = t_name, K = 5, add_size = (sample_ct_freq[[t_name]]-ct_freq[t_name]))
+          tmp_smote <- rbind(tmp_smote, res$data)
+          celltype_smote <- c(celltype_smote, rep(t_name, nrow(res$data)))
+        }
+        train_sets[[i]] <- t(tmp_smote[, -ncol(tmp_smote)])
+        celltypes[[i]] <- celltype_smote
+        platforms[[i]] <- rep(unique(platforms[[i]]), ncol(train_sets[[i]]))
       }
-      tmp <- data.frame(t(as.matrix(train_sets[[i]])), stringsAsFactors = F, check.names = F)
-      tmp$class <- celltypes[[i]]
-      tmp_N <- subset(tmp, !(tmp$class %in% names(sample_ct_freq)))
-      celltype_N <- subset(celltypes[[i]], !(celltypes[[i]] %in% names(sample_ct_freq)))
-      tmp_smote <- tmp_N
-      celltype_smote <- celltype_N
-      ### smote for rare cell-types
-      for (t_name in names(sample_ct_freq)) {
-        tmp_target <- subset(tmp, tmp$class == t_name)
-        res <- se_SMOTE(tmp_target[, -ncol(tmp_target)], target = tmp_target$class, target_name = t_name, K = 5, add_size = sample_ct_freq[[t_name]])
-        tmp_smote <- rbind(tmp_smote, res$data)
-        celltype_smote <- c(celltype_smote, rep(t_name, nrow(res$data)))
-      }
-      train_sets[[i]] <- t(tmp_smote[, -ncol(tmp_smote)])
-      celltypes[[i]] <- celltype_smote
-      platforms[[i]] <- rep(unique(platforms[[i]]), ncol(train_sets[[i]]))
+    }
+    message('SMOTE Done')
+  }else{
+    for (i in 1:length(seuratlist)) {
+      train_sets[[i]] <- data.frame(as.matrix(train_sets[[i]]), stringsAsFactors = F, check.names = F)
     }
   }
-  message('SMOTE Done')
   platforms <- unlist(platforms, use.names = F)
   celltypes <- unlist(celltypes, use.names = F)
   for (i in 1:length(seuratlist)) {

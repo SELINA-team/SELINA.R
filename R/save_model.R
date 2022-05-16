@@ -4,7 +4,7 @@
 #' @param path_out Directory for saving model.
 #' @param prefix Prefix of the output files. DEFAULT: train
 #'
-#' @return
+#' @return None
 #' @importFrom torch torch_save
 #' 
 #' @export

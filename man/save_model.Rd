@@ -14,7 +14,7 @@ save_model(model, path_out, prefix = "train")
 \item{prefix}{Prefix of the output files. DEFAULT: train}
 }
 \value{
-
+None
 }
 \description{
 save_model

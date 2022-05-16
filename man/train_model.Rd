@@ -16,5 +16,5 @@ An MADA model.
 Train model based on your own data
 }
 \examples{
-model <- train_model(seuratlist)
+model <- train_model(list(rds1, rds2))
 }
