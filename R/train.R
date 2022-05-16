@@ -13,7 +13,7 @@
 #'
 #' @examples model <- train_model(list(rds1, rds2))
 train_model <- function(seuratlist) {
-
+  if(class(seuratlist)!='list') { stop("Input should be a list")}
   params_train <- c(0.0001, 50, 128)
   device <- if (cuda_is_available()) torch_device("cuda:0") else "cpu"
 
