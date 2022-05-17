@@ -5,11 +5,10 @@
 #' @param path_out File path of the output files.
 #' @param outprefix Prefix of the output files. DEFAULT: query.
 #' @param disease Depend on your data is in some disease condition or not, choose from 'TRUE' or 'FALSE'. DEFAULT: 'FALSE'.
-#' @param mode Single-cell level input or cluster level input, choose from 'single' or 'cluster'. DEFAULT: 'single'.
 #' @param cell_cutoff Cutoff for number of cells with the same cell type in 10 nearest neighbor cells(only used when the input is single-cell level expression matrix). DEFAULT: 5.
 #' @param prob_cutoff Cutoff for prediction probability. DEFAULT: 0.9.
 #'
-#' @return A list which includes prediction results and corresponding probability for query data. This step will generate eight files for 'single' mode and four files for 'cluster' mode. 
+#' @return A list which includes prediction results and corresponding probability for query data. This step will generate eight files. 
 #'
 #' @importFrom stats rnorm
 #' @importFrom utils read.csv write.table
@@ -27,10 +26,9 @@
 #' @examples                               path_out,
 #' @examples                               outprefix = 'demo', 
 #' @examples                               disease = FALSE, 
-#' @examples                               mode = 'single',
 #' @examples                               cell_cutoff = 5,
 #' @examples                               prob_cutoff = 0.9)
-query_predict <- function(queryObj, model, path_out, outprefix, disease = FALSE, mode = "single", cell_cutoff = 5, prob_cutoff = 0.9) {
+query_predict <- function(queryObj, model, path_out, outprefix, disease = FALSE, cell_cutoff = 5, prob_cutoff = 0.9) {
   device <- if (torch::cuda_is_available()) torch::torch_device("cuda:0") else "cpu"
   params_tune1 <- c(0.0005, 50, 128)
   params_tune2 <- c(0.0001, 10, 128)
@@ -45,7 +43,7 @@ query_predict <- function(queryObj, model, path_out, outprefix, disease = FALSE,
   nct <- length(ct_dic)
   network <- model$network
   network <- Autoencoder(network, nfeatures, nct)
-  if ((!disease) & (mode != "cluster")) {
+  if (!disease) {
     message("Fine-tuning1")
     network <- tune1(query_expr, network, params_tune1, device)
     message("Fine-tuning2")
@@ -60,7 +58,7 @@ query_predict <- function(queryObj, model, path_out, outprefix, disease = FALSE,
 
   message("Begin downstream analysis")
   predict_downstream(
-    mode, queryObj, cell_cutoff, prob_cutoff, path_out,
+    queryObj, cell_cutoff, prob_cutoff, path_out,
     outprefix, pred_labels, pred_prob
   )
   message("Finish downstream analysis")
@@ -211,41 +209,26 @@ test <- function(test_df, network, ct_dic, device) {
 }
 
 
-predict_downstream <- function(mode, queryObj, cell_cutoff, prob_cutoff, path_out, outprefix, pred_labels, pred_prob) {
+predict_downstream <- function(queryObj, cell_cutoff, prob_cutoff, path_out, outprefix, pred_labels, pred_prob) {
   # main step
-  if (mode == "single") {
-    # Filter cells with low prediction score
-    filtered_label <- pred_filter(queryObj, pred_labels, pred_prob, cell_cutoff, prob_cutoff)
+  # Filter cells with low prediction score
+  filtered_label <- pred_filter(queryObj, pred_labels, pred_prob, cell_cutoff, prob_cutoff)
 
-    # Generate plots and files indicating the prediction quality for each cluster
-    cluster_quality(queryObj, filtered_label, pred_prob, path_out, outprefix)
+  # Generate plots and files indicating the prediction quality for each cluster
+  cluster_quality(queryObj, filtered_label, pred_prob, path_out, outprefix)
 
-    # Find differentially expressed genes for each cell type
-    if (length(unique(filtered_label[filtered_label != "Unknown"])) > 1) {
-      cluster.genes <- FindMarkers(object = queryObj[, filtered_label != "Unknown"], celltypes = filtered_label[filtered_label != "Unknown"])
-      write.table(cluster.genes, file.path(path_out, paste0(outprefix, "_DiffGenes.tsv")), quote = F, sep = "\t", row.names = FALSE)
-    }
-
-    # Output umap plot with predicted cell type labels
-    queryObj$pred <- filtered_label
-    p <- DimPlot(object = queryObj[, filtered_label != "Unknown"], label = TRUE, pt.size = 0.2, repel = TRUE, group.by = "pred")
-    ggsave(file.path(path_out, paste0(outprefix, "_pred.png")), p, width = 7, height = 5)
-    write.table(data.frame(Cell = colnames(queryObj), Prediction = filtered_label, Cluster = queryObj$seurat_clusters), file.path(path_out, paste0(outprefix, "_predictions.txt")), col.names = TRUE, row.names = FALSE, quote = FALSE, sep = "\t")
-  } else {
-    queryObj$pred <- "pred"
-    prob <- apply(pred_prob, MARGIN = 1, max)
-    pred_labels[prob < prob_cutoff] <- "Unknown"
-    for (i in 1:length(pred_labels)) {
-      queryObj$pred[queryObj$seurat_clusters == as.character(i - 1)] <- pred_labels[i]
-    }
-    if (length(unique(queryObj$pred[queryObj$pred != "Unknown"])) > 1) {
-      cluster.genes <- FindMarkers(object = queryObj[, queryObj$pred != "Unknown"], celltypes = queryObj$pred[queryObj$pred != "Unknown"])
-      write.table(cluster.genes, file.path(path_out, paste0(outprefix, "_DiffGenes.tsv")), quote = FALSE, sep = "\t", row.names = FALSE)
-    }
-    p <- DimPlot(object = queryObj[, queryObj$pred != "Unknown"], label = TRUE, pt.size = 0.2, repel = TRUE, group.by = "pred")
-    ggsave(file.path(path_out, paste0(outprefix, "_pred.png")), p, width = 7, height = 5)
-    write.table(data.frame(Cell = colnames(queryObj), Prediction = queryObj$pred, Cluster = queryObj$seurat_clusters), file.path(path_out, paste0(outprefix, "_predictions.txt")), col.names = TRUE, row.names = FALSE, quote = FALSE, sep = "\t")
+  # Find differentially expressed genes for each cell type
+  if (length(unique(filtered_label[filtered_label != "Unknown"])) > 1) {
+    cluster.genes <- FindMarkers(object = queryObj[, filtered_label != "Unknown"], celltypes = filtered_label[filtered_label != "Unknown"])
+    write.table(cluster.genes, file.path(path_out, paste0(outprefix, "_DiffGenes.tsv")), quote = F, sep = "\t", row.names = FALSE)
   }
+
+  # Output umap plot with predicted cell type labels
+  queryObj$pred <- filtered_label
+  p <- DimPlot(object = queryObj[, filtered_label != "Unknown"], label = TRUE, pt.size = 0.2, repel = TRUE, group.by = "pred")
+  ggsave(file.path(path_out, paste0(outprefix, "_pred.png")), p, width = 7, height = 5)
+  write.table(data.frame(Cell = colnames(queryObj), Prediction = filtered_label, Cluster = queryObj$seurat_clusters), file.path(path_out, paste0(outprefix, "_predictions.txt")), col.names = TRUE, row.names = FALSE, quote = FALSE, sep = "\t")
+
 }
 
 # Find differentially expressed genes

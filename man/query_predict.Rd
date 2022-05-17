@@ -10,7 +10,6 @@ query_predict(
   path_out,
   outprefix,
   disease = FALSE,
-  mode = "single",
   cell_cutoff = 5,
   prob_cutoff = 0.9
 )
@@ -26,14 +25,12 @@ query_predict(
 
 \item{disease}{Depend on your data is in some disease condition or not, choose from 'TRUE' or 'FALSE'. DEFAULT: 'FALSE'.}
 
-\item{mode}{Single-cell level input or cluster level input, choose from 'single' or 'cluster'. DEFAULT: 'single'.}
-
 \item{cell_cutoff}{Cutoff for number of cells with the same cell type in 10 nearest neighbor cells(only used when the input is single-cell level expression matrix). DEFAULT: 5.}
 
 \item{prob_cutoff}{Cutoff for prediction probability. DEFAULT: 0.9.}
 }
 \value{
-A list which includes prediction results and corresponding probability for query data. This step will generate eight files for 'single' mode and four files for 'cluster' mode.
+A list which includes prediction results and corresponding probability for query data. This step will generate eight files.
 }
 \description{
 Fine-tuning and predict for the query data
@@ -45,7 +42,6 @@ query_result <- query_predict(queryObj,
                               path_out,
                               outprefix = 'demo', 
                               disease = FALSE, 
-                              mode = 'single',
                               cell_cutoff = 5,
                               prob_cutoff = 0.9)
 }

@@ -85,14 +85,11 @@ query_result <- query_predict(queryObj,
                               path_out,
                               outprefix = 'demo', 
                               disease = FALSE, 
-                              mode = 'single',
                               cell_cutoff = 5,
                               prob_cutoff = 0.9)
 ```
 
-This step will output eight files in the predict\_output folder. Note
-that if the input is a cluster level matrix, then the last four files
-will not be generated.  
+This step will output eight files in the predict\_output folder. 
 1\. `demo_predictions.txt` : predicted cell type for each cell in the
 query data.  
 2\. `demo_probability.txt` : probability of cells predicted as each of
