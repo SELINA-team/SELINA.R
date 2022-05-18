@@ -104,7 +104,7 @@ label2dic <- function(label) {
 
 preprocessing <- function(seuratlist) {
   message("Loading data")
-  train_sets = sapply(seuratlist, function(rds) rds@assays$RNA@data, USE.NAMES = F)
+  train_sets = sapply(seuratlist, function(rds) rds@assays$RNA@count, USE.NAMES = F)
   celltypes <- list()
   platforms <- list()
   genes <- list()
