@@ -33,7 +33,7 @@ query_predict <- function(queryObj, model, path_out, outprefix, disease = FALSE,
   params_tune2 <- c(0.0001, 10, 128)
 
   message("Loading data")
-  query_expr <- queryObj@assays$RNA@count
+  query_expr <- queryObj@assays$RNA@counts
   meta <- model$meta
   genes <- meta$genes
   ct_dic <- meta$celltypes
