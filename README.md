@@ -76,7 +76,7 @@ parameter details with command `?query_predict`.
 library(SELINA)
 
 ## If you predict directly after training, then can pass the next load model step.
-model <- read_model(path_model)
+model <- read_model(path_model, path_meta)
 
 ## Predict query cell with SELINA.
 queryObj <- readRDS(path_query)

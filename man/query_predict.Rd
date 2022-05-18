@@ -36,7 +36,6 @@ A list which includes prediction results and corresponding probability for query
 Fine-tuning and predict for the query data
 }
 \examples{
-queryObj <- readRDS(path_query)
 query_result <- query_predict(queryObj,
                               model,
                               path_out,

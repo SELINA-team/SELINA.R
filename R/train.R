@@ -164,7 +164,7 @@ preprocessing <- function(seuratlist) {
     message('SMOTE Done')
   }else{
     for (i in 1:length(seuratlist)) {
-      train_sets[[i]] <- data.frame(as.matrix(train_sets[[i]]), stringsAsFactors = F, check.names = F)
+      train_sets[[i]] <- as.matrix(train_sets[[i]])
     }
   }
   platforms <- unlist(platforms, use.names = F)

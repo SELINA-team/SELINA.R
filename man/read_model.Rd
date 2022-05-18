@@ -4,10 +4,12 @@
 \alias{read_model}
 \title{read_model}
 \usage{
-read_model(path_model)
+read_model(path_model, path_meta)
 }
 \arguments{
 \item{path_model}{Path for loading model.}
+
+\item{path_meta}{Path for read meta file (rds format)}
 }
 \value{
 A MADA object.

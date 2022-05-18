@@ -20,7 +20,6 @@
 #' @import presto
 #' @export
 #'
-#' @examples queryObj <- readRDS(path_query)
 #' @examples query_result <- query_predict(queryObj,
 #' @examples                               model,
 #' @examples                               path_out,
@@ -197,12 +196,12 @@ test <- function(test_df, network, ct_dic, device) {
       expr <- expr$to(dtype = torch_float())
       expr <- expr$to(device = device)
       class_output <- network(expr)
-      pred_labels <- as.numeric(class_output$argmax(dim = 2))
+      pred_labels <- as.numeric(class_output$argmax(dim = 2)$cpu())
       pred_prob <- class_output
     })
   )
   pred_labels <- sapply(pred_labels, function(x) ct_dic_rev[[x]])
-  pred_prob <- as.matrix(pred_prob)
+  pred_prob <- as.matrix(pred_prob$cpu())
   rownames(pred_prob) <- colnames(test_df)
   colnames(pred_prob) <- names(ct_dic)
   return(list(pred_labels = pred_labels, pred_prob = pred_prob))
