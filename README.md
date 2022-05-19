@@ -96,7 +96,7 @@ query_result <- query_predict(queryObj,
                               prob_cutoff = 0.9)
 ```
 
-This step will output eight files in the predict\_output folder. 
+This step will output eight files in the `path_out` folder. 
 
 1\. `demo_predictions.txt` : predicted cell type for each cell in the
 query data.  
