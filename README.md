@@ -79,13 +79,13 @@ SELINA has trained models for 35 kinds of normal tissues and 5 kinds of disease 
 library(SELINA)
 
 ## If you predict directly after training, then can pass the next load model step.
-# If you read in models trained by themselves:
+# If you want to use models trained by yourself:
 model <- read_model(path_model)
 
-# If you want to use model SELINA trained:
+# If you want to use models SELINA trained:
 model <- load_selina_model(path_model)
 
-## Predict query cell with SELINA.
+## Predict with SELINA.
 queryObj <- readRDS(path_query)
 query_result <- query_predict(queryObj,
                               model,
