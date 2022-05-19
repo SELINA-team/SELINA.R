@@ -35,12 +35,3 @@ A list which includes prediction results and corresponding probability for query
 \description{
 Fine-tuning and predict for the query data
 }
-\examples{
-query_result <- query_predict(queryObj,
-                              model,
-                              path_out,
-                              outprefix = 'demo', 
-                              disease = FALSE, 
-                              cell_cutoff = 5,
-                              prob_cutoff = 0.9)
-}

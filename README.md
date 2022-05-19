@@ -21,7 +21,9 @@ pre-trained models.
 
 ## Installation
 
-We recommend you install SELINA.R with `devtools::install_github()` from
+If you have gpu on your device and want to use it, you should install [cudatoolkit](https://developer.nvidia.com/cuda-downloads) and [cudnn](https://developer.nvidia.com/rdp/cudnn-archive) based on your system version before SELINA installation.
+
+We recommend you install SELINA with `devtools::install_github()` from
 R:
 
 ``` r
@@ -72,11 +74,16 @@ Annotate query data with `query_predict`. You will get a list, which includes pr
 Files used in here are included in folder `demo`. You can check
 parameter details with command `?query_predict`.
 
+SELINA has trained models for 35 kinds of normal tissues and 5 kinds of disease tissues, you can download them from [SELINA-reference](https://github.com/SELINA-team/SELINA-reference/tree/main/r).
 ``` r
 library(SELINA)
 
 ## If you predict directly after training, then can pass the next load model step.
-model <- read_model(path_model, path_meta)
+# If you read in models trained by themselves:
+model <- read_model(path_model)
+
+# If you want to use model SELINA trained:
+model <- load_selina_model(path_model)
 
 ## Predict query cell with SELINA.
 queryObj <- readRDS(path_query)

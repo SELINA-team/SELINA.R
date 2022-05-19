@@ -19,6 +19,3 @@ None
 \description{
 save_model
 }
-\examples{
-save_model(model, path_out, prefix)
-}

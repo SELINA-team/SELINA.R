@@ -8,12 +8,12 @@
 #' @importFrom grDevices dev.off png
 #' @importFrom utils read.table
 #' @importFrom torch nn_sequential cuda_is_available torch_device torch_tensor torch_unsqueeze dataset nn_module dataloader nn_cross_entropy_loss nn_mse_loss optim_adam torch_float torch_load torch_save autograd_function with_no_grad
-
 #' @export
 #'
-#' @examples model <- train_model(list(rds1, rds2))
 train_model <- function(seuratlist) {
-  if(class(seuratlist)!='list') { stop("Input should be a list")}
+  if (class(seuratlist) != "list") {
+    stop("Input should be a list")
+  }
   params_train <- c(0.0001, 50, 128)
   device <- if (cuda_is_available()) torch_device("cuda:0") else "cpu"
 
@@ -34,9 +34,9 @@ train_model <- function(seuratlist) {
     nct, nplat, ct_dic, plat_dic, device
   )
   model_meta <- list(genes = genes, celltypes = ct_dic)
-  
+
   message("All done")
-  return(list(network=network, meta=model_meta))
+  return(list(network = network, meta = model_meta))
 }
 
 se_SMOTE <- function(X, target, target_name, K = 5, add_size = 1000) {
@@ -104,7 +104,7 @@ label2dic <- function(label) {
 
 preprocessing <- function(seuratlist) {
   message("Loading data")
-  train_sets = sapply(seuratlist, function(rds) rds@assays$RNA@counts, USE.NAMES = F)
+  train_sets <- sapply(seuratlist, function(rds) rds@assays$RNA@counts, USE.NAMES = F)
   celltypes <- list()
   platforms <- list()
   genes <- list()
@@ -130,8 +130,8 @@ preprocessing <- function(seuratlist) {
       rct_freqs[ct] <- ct_freqs[i]
     }
   }
-  if(length(rct_freqs)>0){
-    message('Start SMOTE')
+  if (length(rct_freqs) > 0) {
+    message("Start SMOTE")
     for (i in 1:length(seuratlist)) {
       sample_ct_freq <- list()
       ct_freq <- table(celltypes[i])
@@ -152,7 +152,7 @@ preprocessing <- function(seuratlist) {
         ### smote for rare cell-types
         for (t_name in names(sample_ct_freq)) {
           tmp_target <- subset(tmp, tmp$class == t_name)
-          res <- se_SMOTE(tmp_target[, -ncol(tmp_target)], target = tmp_target$class, target_name = t_name, K = 5, add_size = (sample_ct_freq[[t_name]]-ct_freq[t_name]))
+          res <- se_SMOTE(tmp_target[, -ncol(tmp_target)], target = tmp_target$class, target_name = t_name, K = 5, add_size = (sample_ct_freq[[t_name]] - ct_freq[t_name]))
           tmp_smote <- rbind(tmp_smote, res$data)
           celltype_smote <- c(celltype_smote, rep(t_name, nrow(res$data)))
         }
@@ -161,8 +161,8 @@ preprocessing <- function(seuratlist) {
         platforms[[i]] <- rep(unique(platforms[[i]]), ncol(train_sets[[i]]))
       }
     }
-    message('SMOTE Done')
-  }else{
+    message("SMOTE Done")
+  } else {
     for (i in 1:length(seuratlist)) {
       train_sets[[i]] <- as.matrix(train_sets[[i]])
     }
@@ -244,11 +244,11 @@ train <- function(train_data, params, celltypes, platforms, nfeatures, nct, npla
   lr <- params[1]
   n_epoch <- params[2]
   batch_size <- params[3]
+  network <- network$to(device = device)
   train_data <- trainDatasets(data = train_data, celltypes, platforms, ct_dic, plat_dic)
   optimizer <- torch::optim_adam(network$parameters, lr = lr)
   loss_class <- torch::nn_cross_entropy_loss()
   loss_domain <- torch::nn_cross_entropy_loss()
-  network <- network$to(device = device)
   loss_class <- loss_class$to(device = device)
   loss_domain <- loss_domain$to(device = device)
   train_loader <- torch::dataloader(dataset = train_data, batch_size = batch_size, shuffle = TRUE, drop_last = TRUE)
