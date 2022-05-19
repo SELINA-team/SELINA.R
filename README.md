@@ -76,8 +76,8 @@ parameter details with command `?query_predict`.
 
 SELINA has trained models for 35 kinds of normal tissues and 5 kinds of pan-immune tissues, you can load them with command `?load_selina_model`. All the tissue names are showed in the toggle list below.
 <details>
-  <summary>Tissue models</summary>
-
+  <summary>Tissue models (Click Me)</summary>
+  
 1.Normal
 * Adrenal-Gland
 * Airway-Epithelium
