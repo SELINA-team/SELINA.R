@@ -1,7 +1,7 @@
 #' Fine-tuning and predict for the query data
 #'
 #' @param queryObj Seurat object for query data.
-#' @param model File path of the pre-trained model.
+#' @param model The pre-trained model.
 #' @param path_out File path of the output files.
 #' @param outprefix Prefix of the output files. DEFAULT: query.
 #' @param disease Depend on your data is in some disease condition or not, choose from 'TRUE' or 'FALSE'. DEFAULT: 'FALSE'.
@@ -20,7 +20,7 @@
 #' @import presto
 #' @export
 #'
-query_predict <- function(queryObj, model, path_out, outprefix, disease = FALSE, cell_cutoff = 5, prob_cutoff = 0.9) {
+query_predict <- function(queryObj, model, path_out, outprefix='query', disease = FALSE, cell_cutoff = 5, prob_cutoff = 0.9) {
   device <- if (torch::cuda_is_available()) torch::torch_device("cuda:0") else "cpu"
   params_tune1 <- c(0.0005, 50, 128)
   params_tune2 <- c(0.0001, 10, 128)

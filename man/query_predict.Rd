@@ -8,7 +8,7 @@ query_predict(
   queryObj,
   model,
   path_out,
-  outprefix,
+  outprefix = "query",
   disease = FALSE,
   cell_cutoff = 5,
   prob_cutoff = 0.9
@@ -17,7 +17,7 @@ query_predict(
 \arguments{
 \item{queryObj}{Seurat object for query data.}
 
-\item{model}{File path of the pre-trained model.}
+\item{model}{The pre-trained model.}
 
 \item{path_out}{File path of the output files.}
 

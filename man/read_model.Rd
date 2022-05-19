@@ -2,16 +2,16 @@
 % Please edit documentation in R/read_model.R
 \name{read_model}
 \alias{read_model}
-\title{read_model}
+\title{Read in model trained by yourself}
 \usage{
 read_model(path_model)
 }
 \arguments{
-\item{path_model}{Path for loading model.}
+\item{path_model}{Path for model file suffixed with '.pt'.}
 }
 \value{
 A trained MADA model.
 }
 \description{
-read_model
+Read in model trained by yourself
 }

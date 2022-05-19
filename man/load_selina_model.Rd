@@ -2,16 +2,16 @@
 % Please edit documentation in R/load_selina_model.R
 \name{load_selina_model}
 \alias{load_selina_model}
-\title{load_selina_model}
+\title{Load model trained by SELINA}
 \usage{
-load_selina_model(path_model)
+load_selina_model(tissue)
 }
 \arguments{
-\item{path_model}{Path for loading SELINA model. Please put '.pth' and 'rds' in the same folder.}
+\item{tissue}{Choose which tissue model you want to load, eg: Pancreas. Please see documentation for tissue name.}
 }
 \value{
 A trained MADA model.
 }
 \description{
-load_selina_model
+Load model trained by SELINA
 }

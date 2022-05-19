@@ -67,30 +67,30 @@ trained model.
 2\. `pre-trained_meta.rds` : a file containing the cell types and genes
 of the reference data.
 
-### Predict
+### Prediction
 
 Annotate query data with `query_predict`. You will get a list, which includes prediction results and corresponding probability for query data.
 
 Files used in here are included in folder `demo`. You can check
 parameter details with command `?query_predict`.
 
-SELINA has trained models for 35 kinds of normal tissues and 5 kinds of disease tissues, you can download them from [SELINA-reference](https://github.com/SELINA-team/SELINA-reference/tree/main/r).
+SELINA has trained models for 35 kinds of normal tissues and 5 kinds of pan-immune tissues, you can download them from [SELINA-reference](https://github.com/SELINA-team/SELINA-reference/tree/main/r).
 ``` r
 library(SELINA)
 
-## If you predict directly after training, then can pass the next load model step.
+## If you predict directly after training, then can skip the next load model step.
 # If you want to use models trained by yourself:
 model <- read_model(path_model)
 
-# If you want to use models SELINA trained:
-model <- load_selina_model(path_model)
+# If you want to load SELINA prepared (Please make sure the input tissue name is included in our documentation):
+model <- load_selina_model(tissue)
 
 ## Predict with SELINA.
 queryObj <- readRDS(path_query)
 query_result <- query_predict(queryObj,
                               model,
                               path_out,
-                              outprefix = 'demo', 
+                              outprefix = 'query', 
                               disease = FALSE, 
                               cell_cutoff = 5,
                               prob_cutoff = 0.9)
