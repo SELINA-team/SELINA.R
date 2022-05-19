@@ -7,7 +7,6 @@
 #' @export
 #'
 load_selina_model <- function(tissue) {
-  netwrok <- read_model(system.file("extdata", paste0(tissue,"_params.pt"), package = "SELINA"))
-  meta <- readRDS(system.file("extdata", paste0(tissue,"_meta.rds"), package = "SELINA"))
-  return(list(network = netwrok, meta = meta))
+  model <- read_model(system.file("extdata", paste0(tissue,"_params.pt"), package = "SELINA"))
+  return(model)
 }
