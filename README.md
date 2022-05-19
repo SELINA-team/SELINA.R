@@ -74,7 +74,55 @@ Annotate query data with `query_predict`. You will get a list, which includes pr
 Files used in here are included in folder `demo`. You can check
 parameter details with command `?query_predict`.
 
-SELINA has trained models for 35 kinds of normal tissues and 5 kinds of pan-immune tissues, you can download them from [SELINA-reference](https://github.com/SELINA-team/SELINA-reference/tree/main/r).
+SELINA has trained models for 35 kinds of normal tissues and 5 kinds of pan-immune tissues, you can load them with command `?load_selina_model`. All the tissue names are showed in the toggle list below.
+<details>
+  <summary>Tissue models</summary>
+
+1.Normal
+* Adrenal-Gland
+* Airway-Epithelium
+* Artery
+* Bladder
+* Blood
+* Bone-Marrow
+* Brain
+* Breast
+* Choroid
+* Decidua
+* Esophagus
+* Eye
+* Fallopian-Tube
+* Gall-Bladder
+* Heart
+* Intestine
+* Kidney
+* Liver
+* Lung
+* Muscle
+* Nose
+* Ovary
+* Pancreas
+* Peritoneum
+* Placenta
+* Pleura
+* Prostate
+* Skin
+* Spleen
+* Stomach
+* Testis
+* Thyroid
+* Ureter
+* Uterus
+* Visceral-Adipose
+
+2.Panimmune
+* Panimmune-Intestine
+* Panimmune-Liver
+* Panimmune-Lung
+* Panimmune-Pancreas
+* Panimmune-Skin
+</details>
+
 ``` r
 library(SELINA)
 
