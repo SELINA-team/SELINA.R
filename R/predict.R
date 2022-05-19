@@ -45,6 +45,8 @@ query_predict <- function(queryObj, model, path_out, outprefix='query', disease 
   test_res <- test(query_expr, network, ct_dic, device)
   pred_labels <- test_res$pred_labels
   pred_prob <- test_res$pred_prob
+  
+  write.table(data.frame(pred_prob, stringsAsFactors = F), file.path(path_out, paste0(outprefix, "_probability.txt")), col.names = TRUE, quote = FALSE, sep = "\t")
 
   message("Finish Prediction")
 
