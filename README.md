@@ -82,7 +82,7 @@ library(SELINA)
 # If you want to use models trained by yourself:
 model <- read_model(path_model)
 
-# If you want to load SELINA prepared (Please make sure the input tissue name is included in our documentation):
+# If you want to load model SELINA prepared (Please make sure the input tissue name is included in our documentation, eg: Pancreas):
 model <- load_selina_model(tissue)
 
 ## Predict with SELINA.
