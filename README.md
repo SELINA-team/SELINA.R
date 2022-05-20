@@ -138,7 +138,7 @@ queryObj <- readRDS(path_query)
 query_result <- query_predict(queryObj,
                               model,
                               path_out,
-                              outprefix = 'query', 
+                              outprefix = 'demo', 
                               disease = FALSE, 
                               cell_cutoff = 5,
                               prob_cutoff = 0.9)
