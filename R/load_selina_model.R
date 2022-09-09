@@ -7,6 +7,6 @@
 #' @export
 #'
 load_selina_model <- function(tissue) {
-  model <- read_model(system.file("extdata", paste0(tissue,"_params.pt"), package = "SELINA"))
+  model <- read_model(system.file("extdata", paste0(tissue, "_params.pt"), package = "SELINA"))
   return(model)
 }

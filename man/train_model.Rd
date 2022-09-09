@@ -4,10 +4,12 @@
 \alias{train_model}
 \title{Train model based on your own data}
 \usage{
-train_model(seuratlist)
+train_model(path_in, disease)
 }
 \arguments{
-\item{seuratlist}{A list of seurat object for training.}
+\item{path_in}{Folder includes expression and meta files.}
+
+\item{disease}{Depend on your data is in some disease condition or not, choose from 'TRUE' or 'FALSE'. DEFAULT: 'FALSE'.}
 }
 \value{
 An MADA model.

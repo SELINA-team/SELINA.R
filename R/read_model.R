@@ -1,7 +1,7 @@
 #' Read in model trained by yourself
 #'
 #' @param path_model Path for model file suffixed with '.pt'.
-#' 
+#'
 #' @return A trained MADA model.
 #' @importFrom torch torch_load cuda_is_available
 #' @export
