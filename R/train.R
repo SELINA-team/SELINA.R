@@ -5,7 +5,7 @@
 #'
 #' @return An MADA model.
 #' @importFrom stats runif
-#' @importFrom reticulate source_python
+#' @importFrom reticulate source_python use_python
 #' @importFrom utils read.csv write.table
 #' @importFrom grDevices dev.off png
 #' @importFrom utils read.table
