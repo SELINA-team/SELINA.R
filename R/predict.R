@@ -12,14 +12,13 @@
 #' @importFrom stats rnorm
 #' @importFrom utils read.csv write.table
 #' @importFrom torch nn_relu cuda_is_available torch_device torch_tensor torch_unsqueeze dataset nn_module dataloader nn_cross_entropy_loss nn_mse_loss optim_adam torch_float torch_load torch_save autograd_function with_no_grad
-#' @import Seurat
-#' @import ggplot2
-#' @import dbscan
-#' @import gtools
-#' @import presto
-#' @import dplyr
-#' @import reticulate
-#' @import rlang
+#' @importFrom Seurat
+#' @importFrom ggplot2
+#' @importFrom dbscan
+#' @importFrom gtools
+#' @importFrom presto
+#' @importFrom dplyr
+#' @importFrom rlang
 #' @export
 #'
 #'
