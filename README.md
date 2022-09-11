@@ -54,8 +54,8 @@ parameter details with command `?train_model`.
 ``` r
 library(SELINA)
 
-model <- train_model(path_in="demos/disease_data/reference_data",
-                     disease=TRUE)
+model <- train_model(path_in="demos/normal_data/reference_data",
+                     disease=FALSE)
 ```
 Save the model with `save_model`.
 ```r
