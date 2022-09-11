@@ -21,6 +21,12 @@ pre-trained models.
   
 ## Installation
 
+- SELINA is available for macOS, Linux and Windows and has been tested on linux system with several dependency packages listed in DESCRIPTION file, all of which will be installed simultaneously using the following commands except for some python packages need to be prepared before. 
+    - numpy=1.22.3
+    - pandas=1.3.4
+    - datatable=0.11.1
+    - imbalanced-learn=0.8.1 
+
 If you have gpu on your device and want to use it, you should install [cudatoolkit](https://developer.nvidia.com/cuda-downloads) and [cudnn](https://developer.nvidia.com/rdp/cudnn-archive) based on your system version before SELINA installation.
 
 We recommend you install SELINA with `devtools::install_github()` from
