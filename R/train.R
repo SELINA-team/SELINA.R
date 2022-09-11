@@ -15,7 +15,8 @@
 train_model <- function(path_in, disease) {
   params_train <- c(0.0001, 50, 128)
   device <- if (cuda_is_available()) torch_device("cuda:0") else "cpu"
-  reticulate::source_python(system.file("python", "selina.py", package = "SELINA"))
+  use_python(Sys.which("python"))
+  source_python(system.file("python", "selina.py", package = "SELINA"))
   if (disease) {
     res_pre <- preprocessing(path_in, disease)
     train_data <- as.matrix(res_pre[[1]])
