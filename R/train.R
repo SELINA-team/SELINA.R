@@ -42,11 +42,11 @@ train_model <- function(path_in, disease) {
     return(list(network = network, meta = model_meta))
   } else {
     res_pre <- preprocessing(path_in, disease)
-    train_data <- res_pre$train_sets
-    celltypes <- res_pre$celltypes
-    platforms <- res_pre$platforms
-    genes <- res_pre$genes
-
+    train_data <- as.matrix(res_pre[[1]])
+    celltypes <- res_pre[[2]]
+    platforms <- res_pre[[3]]
+    genes <- res_pre[[4]]
+    
     ct_dic <- label2dic(celltypes)
     plat_dic <- label2dic(platforms)
     nfeatures <- nrow(train_data)

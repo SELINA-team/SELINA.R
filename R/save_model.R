@@ -9,6 +9,6 @@
 #'
 #' @export
 save_model <- function(model, path_out, prefix = "train") {
-  torch_save(model$network, paste0(path_out, "/", prefix, "_params.pt"))
-  saveRDS(model$meta, paste0(path_out, "/", prefix, "_meta.rds"))
+  torch_save(model$network, file.path(path_out, paste0(prefix, "_params.pt")))
+  saveRDS(model$meta, file.path(path_out, paste0(prefix, "_meta.rds")))
 }
