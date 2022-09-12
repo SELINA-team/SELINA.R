@@ -43,14 +43,14 @@ devtools::install_github("SELINA-team/SELINA.R")
 ### Preprocess of query data
 
 You could preprocess query data with steps in
-[SELINA.py](https://github.com/SELINA-team/SELINA.py#preprocess-of-query-data). 
+[documentation](https://selinapy.readthedocs.io/en/latest/prepare.html#preprocess-of-query-data). 
 
 ### Pre-training of the reference data
 
 Train model with `train_model`. You will get a list, which includes a training model and it's meta information. Files used in here are included in folder `demos`. You can check
 parameter details with command `?train_model`.
 
-*_NOTE:_* Please put expression and meta files in one folder,  meta file should include `Celltype` and `Platform` columns.
+*_NOTE:_* Please put expression and meta files in one folder,  meta file should include `Celltype` and `Platform` columns for normal datasets, and an additional `Disease` column for disease datasets.
 ``` r
 library(SELINA)
 
