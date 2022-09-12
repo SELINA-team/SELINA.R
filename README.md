@@ -158,3 +158,8 @@ the annotation results.
 
 For disease mode, an extra file will be generated. 
 - 5\. `query_cellsources.txt`: predicted cell source for each cell in the query data
+
+## Change Log
+
+### v0.1
+* Release SELINA R package with normal and disease modes.
