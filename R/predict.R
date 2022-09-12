@@ -101,7 +101,7 @@ Datasets <- torch::dataset(
     ncol(self$expr)
   }
 )
-# Autoencoder(network, nfeatures, nct)
+
 Autoencoder <- torch::nn_module(
   "class_Autoencoder",
   initialize = function(network, nfeature, nct) {
